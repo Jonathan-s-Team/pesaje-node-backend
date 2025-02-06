@@ -1,0 +1,8 @@
+
+node_modules/
+mongo/
+
+.env
+
+uploads/productos/**.*
+uploads/usuarios/**.*
