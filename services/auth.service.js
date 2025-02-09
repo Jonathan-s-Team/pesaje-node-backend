@@ -25,13 +25,13 @@ const loginUser = async (username, password) => {
                 id: user._id,
                 username: user.username,
                 email: user.person.email
-            }, process.env.AUTH_TOKEN_EXPIRE_IN);
+            }, process.env.AUTH_TOKEN_EXPIRE_IN || '1h');
 
         // Generate Refresh Token - expires in 7 days
         const refreshToken = await generateJWT(
             {
                 id: user._id,
-            }, process.env.REFRESH_TOKEN_EXPIRE_IN);
+            }, process.env.REFRESH_TOKEN_EXPIRE_IN || '7d');
 
         // Convert expiresIn to a Date object (current time + 1 hour)
         const expiresInDate = new Date(Date.now() + 60 * 60 * 1000);
@@ -65,7 +65,7 @@ const revalidateAuthToken = async (refreshToken) => {
                 id: user._id,
                 username: user.username,
                 email: user.person.email
-            }, process.env.AUTH_TOKEN_EXPIRE_IN);
+            }, process.env.AUTH_TOKEN_EXPIRE_IN || '1h');
         return {
             authToken: newAuthToken,
             expiresIn: new Date(Date.now() + 60 * 60 * 1000)
