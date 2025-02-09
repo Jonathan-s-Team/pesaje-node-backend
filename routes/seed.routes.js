@@ -8,7 +8,7 @@ const router = Router();
 
 
 // Obtener eventos
-router.get('/seed-all', seedAllData);
+router.get('/all', seedAllData);
 
 module.exports = router;
 

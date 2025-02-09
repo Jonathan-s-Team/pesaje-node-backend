@@ -1,6 +1,5 @@
 const { response } = require('express');
-const { generateJWT } = require('../helpers/jwt');
-const { loginUser } = require('../services/auth.service');
+const { loginUser, revalidateAuthToken, getUserById } = require('../services/auth.service');
 
 
 // const crearUsuario = async (req, res = response) => {
@@ -53,7 +52,7 @@ const login = async (req, res = response) => {
         // console.log(result)
         res.status(200).json({
             ok: true,
-            result: result
+            ...result
         });
     } catch (error) {
         res.status(401).json({
@@ -63,22 +62,45 @@ const login = async (req, res = response) => {
     }
 }
 
-const revalidateToken = async (req, res = response) => {
+const refreshAuthToken = async (req, res = response) => {
+    try {
+        const { refreshToken } = req.body;
+        if (!refreshToken) {
+            return res.status(400).json({ ok: false, message: 'Refresh token required' });
+        }
 
-    const { uid, name } = req;
+        const result = await revalidateAuthToken(refreshToken);
+        res.status(200).json({
+            ok: true,
+            ...result
+        });
+    } catch (error) {
+        res.status(401).json({
+            ok: false,
+            error: error.message
+        });
+    }
+}
 
-    // generar un nuevo JWT y retonarlo en esta petición
-    const token = await generateJWT(uid, name);
+const getUserByToken = async (req, res = response) => {
+    try {
+        const result = await getUserById(req.id);
 
-    res.json({
-        ok: true,
-        uid, name,
-        token
-    });
+        res.status(200).json({
+            ok: true,
+            ...result
+        });
+    } catch (error) {
+        res.status(401).json({
+            ok: false,
+            error: error.message
+        });
+    }
 }
 
 module.exports = {
     // crearUsuario,
     login,
-    revalidateToken,
+    refreshAuthToken,
+    getUserByToken,
 }
