@@ -50,9 +50,10 @@ const login = async (req, res = response) => {
     try {
         const { username, password } = req.body;
         const result = await loginUser(username, password);
+        // console.log(result)
         res.status(200).json({
             ok: true,
-            ...result
+            result: result
         });
     } catch (error) {
         res.status(401).json({

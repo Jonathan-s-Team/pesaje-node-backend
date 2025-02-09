@@ -23,7 +23,6 @@ const loginUser = async (username, password) => {
     const payload = { id: user._id, name: user.username, email: user.person.email };
     const token = jwt.sign(payload, process.env.SECRET_JWT_SEED || 'secretKey', { expiresIn: '1h' });
 
-
     const rolePermissions = await RolePermission.find({ role: { $in: user.roles.map(role => role._id) } });
 
     const optionsMap = {};
@@ -38,54 +37,58 @@ const loginUser = async (username, password) => {
         rolePerm.actions.forEach(action => optionsMap[optionId].add(action));
     });
 
-    const aggregatedOptions = Object.keys(optionsMap).map(optionId => ({
-        option: optionId, // this is still the id; we will populate it next
-        actions: Array.from(optionsMap[optionId])
-    }));
+    const optionsData = await Option.find({ _id: { $in: Object.keys(optionsMap) } });
 
-    const optionIds = aggregatedOptions.map(item => item.option);
-    const optionsData = await Option.find({ _id: { $in: optionIds } });
-
-    const optionLookup = {};
-    optionsData.forEach(opt => {
-        optionLookup[opt._id.toString()] = opt.toObject(); // convert to plain object
-    });
-
-    const aggregatedWithDetails = aggregatedOptions.map(item => ({
-        option: optionLookup[item.option],
-        actions: item.actions,
-        // We'll use these properties to help with nesting.
-        nestedSuboptions: [],
-        isNested: false // flag to mark if this aggregated option is already nested under a parent
-    }));
-
-    const aggregatedMap = {};
-    aggregatedWithDetails.forEach(item => {
-        aggregatedMap[item.option._id.toString()] = item;
-    });
-
-    Object.values(aggregatedMap).forEach(parentItem => {
-        if (parentItem.option.suboptions && parentItem.option.suboptions.length > 0) {
-            parentItem.option.suboptions.forEach(childId => {
-                const childIdStr = childId.toString();
-                const childAggregated = aggregatedMap[childIdStr];
-                if (childAggregated) {
-                    // Nest the child under this parent.
-                    parentItem.nestedSuboptions.push(childAggregated);
-                    // Mark the child as nested so it won't appear as a top-level option.
-                    childAggregated.isNested = true;
-                }
-            });
+    const optionsArray = optionsData.map(opt => {
+        return {
+            _id: opt._id,
+            name: opt.name,
+            parentOption: opt.parentOption,
         }
     });
 
-    const availableOptions = Object.values(aggregatedMap).filter(item => !item.isNested);
+    optionsArray.forEach(opt => {
+        opt.actions = optionsMap[opt._id.toString()]
+            ? Array.from(optionsMap[opt._id.toString()])
+            : [];
+    });
 
+    // Create a lookup map with each option keyed by its _id as a string.
+    const lookup = {};
+
+    // First pass: clone each option and add a suboptions property.
+    optionsArray.forEach(option => {
+        // Make sure to clone and add an empty suboptions array.
+        lookup[option._id.toString()] = { ...option, suboptions: [] };
+    });
+
+    // Array to hold the top-level options.
+    const nestedOptions = [];
+
+    // Second pass: nest each option based on its parentOption.
+    optionsArray.forEach(option => {
+        const id = option._id.toString();
+        if (option.parentOption) {
+            const parentId = option.parentOption.toString();
+            // If the parent exists in our lookup, add this option to its suboptions.
+            if (lookup[parentId]) {
+                lookup[parentId].suboptions.push(lookup[id]);
+            } else {
+                // If the parent isn't found, treat this option as a top-level option.
+                nestedOptions.push(lookup[id]);
+            }
+        } else {
+            // No parentOption means it's a top-level option.
+            nestedOptions.push(lookup[id]);
+        }
+    });
+
+    // console.log(JSON.stringify(nestedOptions, null, 2));
 
     return {
         token,
         user: { id: user._id, name: user.username },
-        availableOptions
+        permissions: nestedOptions
     };
 };
 

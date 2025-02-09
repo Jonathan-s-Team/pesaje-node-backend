@@ -39,7 +39,7 @@ const seedDatabase = async () => {
         username: 'admin',
         email: 'admin@example.com',
         password: bcrypt.hashSync('asdf1234', salt),
-        roles: [adminRole._id]
+        roles: [adminRole._id, compradorRole._id]
     });
 
     // Secretaria User
@@ -89,6 +89,8 @@ const seedDatabase = async () => {
         password: bcrypt.hashSync('asdf1234', salt),
         roles: [compradorRole._id]
     });
+
+    console.log('Seeding process completed');
 };
 
 const cleanDatabase = async () => {
@@ -107,26 +109,26 @@ const seedOptions = async () => {
         const optionPrincipal = await Option.create({
             name: 'Principal',
             route: '/home',
-            suboptions: [] // No suboptions for now.
+        });
+
+        const optionPerfilPersonal = await Option.create({
+            name: 'Perfil Personal',
         });
 
         // Perfil Personal
         const optionMiPerfil = await Option.create({
             name: 'Mi Perfil',
             route: '/profile',
-            suboptions: [] // No suboptions for now.
+            parentOption: optionPerfilPersonal,
         });
 
         const optionBroker = await Option.create({
             name: 'Broker',
             route: '/broker',
-            suboptions: [] // No suboptions for now.
+            parentOption: optionPerfilPersonal,
         });
 
-        const optionPerfilPersonal = await Option.create({
-            name: 'Perfil Personal',
-            suboptions: [optionMiPerfil._id, optionBroker._id]
-        });
+
     } catch (error) {
         throw new Error('Error seeding options: ' + error.message);
     }
@@ -160,8 +162,7 @@ const seedPermissions = async (options, roles) => {
         const roles = await Role.find();
 
         // Opción: Principal
-        const optionPrincipal = await Option.findOne({ name: 'Principal' })
-            .populate('suboptions');
+        const optionPrincipal = await Option.findOne({ name: 'Principal' });
         roles.forEach(async (role) => {
             await RolePermission.create({
                 role,
@@ -171,8 +172,7 @@ const seedPermissions = async (options, roles) => {
         });
 
         // Opción: Perfil Personal
-        const optionPerfilPersonal = await Option.findOne({ name: 'Perfil Personal' })
-            .populate('suboptions');
+        const optionPerfilPersonal = await Option.findOne({ name: 'Perfil Personal' });
         roles.forEach(async (role) => {
             await RolePermission.create({
                 role,
@@ -180,14 +180,14 @@ const seedPermissions = async (options, roles) => {
                 actions: [Permission.VIEW],
             });
 
-            const optionMiPerfil = optionPerfilPersonal.suboptions.filter(subopt => subopt.name === 'Mi Perfil')[0];
+            const optionMiPerfil = await Option.findOne({ name: 'Mi Perfil' });
             await RolePermission.create({
                 role,
                 option: optionMiPerfil,
                 actions: [Permission.VIEW, Permission.EDIT],
             });
 
-            const optionBroker = optionPerfilPersonal.suboptions.filter(subopt => subopt.name === 'Broker')[0];
+            const optionBroker = await Option.findOne({ name: 'Broker' });
             switch (role.name) {
                 case 'Admin':
                     await RolePermission.create({

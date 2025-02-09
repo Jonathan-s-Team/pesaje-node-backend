@@ -9,15 +9,16 @@ const OptionSchema = Schema({
     route: {
         type: String,
     },
-    suboptions: [{
+    parentOption: {
         type: Schema.Types.ObjectId,
         ref: 'Option'
-    }],
+    },
 });
 
 OptionSchema.method('toJSON', function () {
     const { __v, _id, ...object } = this.toObject();
     object.id = _id;
+    console.log(object)
     return object;
 });
 
