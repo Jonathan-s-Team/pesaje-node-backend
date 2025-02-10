@@ -9,6 +9,9 @@ const OptionSchema = Schema({
     route: {
         type: String,
     },
+    icon: {
+        type: String,
+    },
     parentOption: {
         type: Schema.Types.ObjectId,
         ref: 'Option'

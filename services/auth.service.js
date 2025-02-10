@@ -106,6 +106,8 @@ const getUserById = async (id) => {
                 id: opt._id,
                 name: opt.name,
                 parentOption: opt.parentOption,
+                route: opt.route,
+                icon: opt.icon,
             }
         });
 
