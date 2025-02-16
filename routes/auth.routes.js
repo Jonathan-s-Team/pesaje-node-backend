@@ -30,7 +30,12 @@ router.post(
     ],
     login);
 
-router.post('/renew', validateJWT, refreshAuthToken);
+router.post('/renew',
+    [
+        check('refreshToken', 'Refresh token is required').not().isEmpty(),
+        validateFields
+    ],
+    refreshAuthToken);
 router.get('/me', validateJWT, getUserByToken);
 
 module.exports = router;
