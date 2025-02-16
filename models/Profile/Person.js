@@ -46,15 +46,12 @@ const PersonSchema = new Schema({
         type: String,
         required: true
     },
-    paymentInfos: [{
-        type: Schema.Types.ObjectId,
-        ref: 'PaymentInfo'
-    }],
-    // Soft delete field: when not deleted, deletedAt is null.
-    deletedAt: {
-        type: Date,
-        default: null
-    }
+});
+
+PersonSchema.method('toJSON', function () {
+    const { __v, _id, ...object } = this.toObject();
+    object.id = _id;
+    return object;
 });
 
 module.exports = model('Person', PersonSchema);

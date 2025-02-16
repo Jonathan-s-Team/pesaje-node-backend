@@ -1,3 +1,4 @@
 module.exports = {
-    Person: require('./Person'),
+    ...require('./Account'),
+    ...require('./Profile'),
 };

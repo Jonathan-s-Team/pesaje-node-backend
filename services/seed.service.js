@@ -2,8 +2,7 @@
 
 const bcrypt = require('bcryptjs');
 
-const { Option, Role, RolePermission, User } = require('../models/Account');
-const { Person } = require('../models');
+const { Option, Role, RolePermission, User, PaymentInfo, Person } = require('../models');
 const Permission = require('../enums/permission.enum');
 
 
@@ -39,7 +38,7 @@ const seedDatabase = async () => {
         username: 'admin',
         email: 'admin@example.com',
         password: bcrypt.hashSync('asdf1234', salt),
-        roles: [adminRole._id, compradorRole._id]
+        roles: [adminRole._id]
     });
 
     // Secretaria User
@@ -96,6 +95,7 @@ const seedDatabase = async () => {
 const cleanDatabase = async () => {
     console.log('Cleaning database...');
     await Option.deleteMany({});
+    await PaymentInfo.deleteMany({});
     await Person.deleteMany({});
     await Role.deleteMany({});
     await RolePermission.deleteMany({});

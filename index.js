@@ -25,8 +25,11 @@ app.use(express.static('public'));
 app.use(express.json());
 
 // Rutas
-app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/seed', require('./routes/seed.routes'));
+app.use('/api/auth', require('./routes/auth.routes'));
+app.use('/api/user', require('./routes/user.routes'));
+app.use('/api/payment-info', require('./routes/paymentInfo.routes'));
+app.use('/api/role', require('./routes/role.routes'));
 
 
 // Escuchar peticiones

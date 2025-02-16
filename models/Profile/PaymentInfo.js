@@ -24,7 +24,21 @@ const PaymentInfoSchema = Schema({
     email: {
         type: String,
         required: true
+    },
+    person: {
+        type: Schema.Types.ObjectId,
+        ref: 'Person'
+    },
+    deletedAt: {
+        type: Date,
+        default: null
     }
+});
+
+PaymentInfoSchema.method('toJSON', function () {
+    const { __v, _id, ...object } = this.toObject();
+    object.id = _id;
+    return object;
 });
 
 module.exports = model('PaymentInfo', PaymentInfoSchema);
