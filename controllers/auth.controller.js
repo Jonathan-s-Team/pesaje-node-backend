@@ -86,10 +86,14 @@ const getUserByToken = async (req, res = response) => {
     try {
         const result = await getUserById(req.id);
 
+        const user = {
+            ...result.user,
+            permissions: result.permissions,
+        }
+
         res.status(200).json({
             ok: true,
-            permissions: result.permissions,
-            ...result.user,
+            user,
         });
     } catch (error) {
         res.status(401).json({

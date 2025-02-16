@@ -153,8 +153,8 @@ const getUserById = async (id) => {
             user: {
                 id: user._id,
                 username: user.username,
-                firstname: user.person.names,
-                lastname: user.person.lastNames,
+                // firstname: user.person.names,
+                // lastname: user.person.lastNames,
                 fullname: `${user.person.names} ${user.person.lastNames}`,
                 email: user.person.email,
             },
