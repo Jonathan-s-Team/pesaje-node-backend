@@ -88,7 +88,8 @@ const getUserByToken = async (req, res = response) => {
 
         res.status(200).json({
             ok: true,
-            ...result
+            permissions: result.permissions,
+            ...result.user,
         });
     } catch (error) {
         res.status(401).json({
