@@ -63,7 +63,7 @@ router.put(
         check('person.identification', 'Identification cannot be empty').optional().not().isEmpty(),
         check('person.birthDate', 'Birthdate must be a valid date').optional().isISO8601(),
         check('person.address', 'Address cannot be empty').optional().not().isEmpty(),
-        check('person.mobilePhone', 'Mobile phone cannot be empty').optional().not().isEmpty(),
+        check('person.mobilePhone', 'Mobile phone cannot be empty').not().isEmpty(),
         check('person.email', 'Valid email is required').optional().isEmail(),
         check('person.emergencyContactName', 'Emergency contact name cannot be empty').optional().not().isEmpty(),
         check('person.emergencyContactPhone', 'Emergency contact phone cannot be empty').optional().not().isEmpty(),
