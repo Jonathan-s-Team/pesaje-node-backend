@@ -1,5 +1,4 @@
 const { response } = require('express');
-const { validationResult } = require('express-validator');
 
 const { create, getAll, getById, remove, update } = require('../services/paymentInfo.service');
 
