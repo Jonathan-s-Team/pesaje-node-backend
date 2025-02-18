@@ -1,5 +1,7 @@
 const bcrypt = require('bcryptjs');
 
+const { userAdapter } = require('../adapters}');
+
 const { User, Role, Person } = require('../models');
 
 
