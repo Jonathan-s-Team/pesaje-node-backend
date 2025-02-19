@@ -1,9 +1,7 @@
-
-const { Role } = require('../models');
-
+const dbAdapter = require('../adapters');
 
 const getAll = async () => {
-    return await Role.find();
+    return await dbAdapter.roleAdapter.getAll();
 };
 
 module.exports = {

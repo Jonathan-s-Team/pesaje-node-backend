@@ -2,12 +2,12 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 const { generateJWT } = require('../helpers/jwt');
-const { User, RolePermission, Option } = require('../models/Account');
+const { RolePermission, User } = require('../models');
 
 
 const loginUser = async (username, password) => {
     try {
-        const user = await User.findOne({ username }).populate('roles');
+        const user = await User.findOne({ username });
 
         if (!user) {
             throw new Error('Invalid credentials');
@@ -68,6 +68,7 @@ const revalidateAuthToken = async (refreshToken) => {
             }, process.env.AUTH_TOKEN_EXPIRE_IN || '1h');
         return {
             authToken: newAuthToken,
+            refreshToken,
             expiresIn: new Date(Date.now() + 60 * 60 * 1000)
         };
     } catch (error) {

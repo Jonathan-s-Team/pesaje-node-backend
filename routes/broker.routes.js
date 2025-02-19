@@ -13,6 +13,14 @@ router.get(
         query('userId')
             .isMongoId()
             .withMessage('Invalid user ID format'), // Ensure personId is a valid ObjectId
+        query('includeDeleted')
+            .optional()
+            .custom(value => {
+                if (value !== 'true' && value !== 'false') {
+                    throw new Error('includeDeleted must be either true or false');
+                }
+                return true;
+            }),
         validateFields, // Ensure this is included to process validation
         validateJWT
     ],

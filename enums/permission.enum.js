@@ -1,8 +1,8 @@
-const Permission = Object.freeze({
+const PermissionEnum = Object.freeze({
     VIEW: 'View',
     EDIT: 'Edit',
     ADD: 'Add',
     DELETE: 'Delete',
 });
 
-module.exports = Permission;
+module.exports = PermissionEnum;

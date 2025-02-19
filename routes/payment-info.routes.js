@@ -4,7 +4,7 @@ const { Router } = require('express');
 const { check, query, param } = require('express-validator');
 const router = Router();
 
-const { createPaymentInfo, getPaymentInfosByPerson, getPaymentInfoById, updatePaymentInfo, deletePaymentInfo } = require('../controllers/paymentInfo.controller');
+const { createPaymentInfo, getPaymentInfosByPerson, getPaymentInfoById, updatePaymentInfo, deletePaymentInfo } = require('../controllers/payment-info.controller');
 const { validateFields } = require('../middlewares/validate-fields');
 const { validateJWT } = require('../middlewares/validate-jwt');
 
@@ -34,6 +34,14 @@ router.get(
         query('personId')
             .isMongoId()
             .withMessage('Invalid person ID format'), // Ensure personId is a valid ObjectId
+        query('includeDeleted')
+            .optional()
+            .custom(value => {
+                if (value !== 'true' && value !== 'false') {
+                    throw new Error('includeDeleted must be either true or false');
+                }
+                return true;
+            }),
         validateFields, // Ensure this is included to process validation
         validateJWT
     ],

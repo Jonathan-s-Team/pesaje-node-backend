@@ -1,9 +1,6 @@
 const bcrypt = require('bcryptjs');
 
-const { userAdapter } = require('../adapters}');
-
-const { User, Role, Person } = require('../models');
-
+const dbAdapter = require('../adapters');
 
 const create = async (data) => {
     if (!data.person) {
@@ -11,86 +8,79 @@ const create = async (data) => {
     }
 
     // Check if the username already exists
-    const existingUser = await User.findOne({ username: data.username });
-    if (existingUser) {
+    const existingUser = await dbAdapter.userAdapter.getAll({ username: data.username });
+    if (existingUser.length > 0) {
         throw new Error('Username is already taken');
     }
 
-    // Create the Person only if the username is unique
-    const person = await Person.create(data.person);
+    // Create the Person entry
+    const person = await dbAdapter.personAdapter.create(data.person);
 
+    // Hash the password
     const salt = bcrypt.genSaltSync();
+    const hashedPassword = bcrypt.hashSync(data.password, salt);
 
-    const user = await User.create({
+    // Create User
+    return await dbAdapter.userAdapter.create({
         username: data.username,
-        password: bcrypt.hashSync(data.password, salt),
+        password: hashedPassword,
         roles: data.roles,
-        person: person._id
+        person: person.id // Use `.id` for cross-DB compatibility
     });
 };
 
 const getAll = async (includeDeleted = false) => {
     const query = includeDeleted ? {} : { deletedAt: null };
-    let usersArray = [];
-    const users = await User.find(query)
-        .populate('person')
-        .populate('roles');
-    users.forEach(user => {
-        const { person, roles, ...userObject } = user.toJSON();
-        userObject.person = user.person;
-        userObject.roles = user.roles;
-        usersArray.push(userObject);
-    });
 
-    return usersArray;
+    // Ensure population works for MongoDB (not needed in relational DBs)
+    if (process.env.DB_TYPE === 'mongo') {
+        return await dbAdapter.userAdapter.getAllWithRelations(query, ['person', 'roles']);
+    }
+
+    // Fetch all users from the adapter (for relational databases)
+    return await dbAdapter.userAdapter.getAll(query);
 };
+
 
 const getById = async (id) => {
-    const user = await User.findById(id)
-        .populate('person')
-        .populate('roles');
-
-    const { person, roles, ...userObject } = user.toJSON();
-    userObject.person = user.person;
-    userObject.roles = user.roles;
-
-    return userObject;
-};
-
-const update = async (id, data) => {
-    let user = await User.findById(id);
+    // Fetch user from the adapter
+    const user = await dbAdapter.userAdapter.getById(id);
     if (!user) {
         throw new Error('User not found');
     }
 
-    // If `person` field is present in `data`, update the `Person` separately
-    if (data.person) {
-        await Person.findByIdAndUpdate(user.person, data.person, { new: true });
-        delete data.person; // Prevent sending full person object to User update
+    // Ensure population for MongoDB (skip for SQL databases)
+    if (process.env.DB_TYPE === 'mongo') {
+        return await dbAdapter.userAdapter.getByIdWithRelations(id, ['person', 'roles']);
     }
 
-    // Update User without sending full person object
-    const updatedUser = await User.findByIdAndUpdate(id, data, { new: true })
-        .populate('person')
-        .populate('roles');
+    return user;
+};
 
-    const { person, roles, ...userObject } = updatedUser.toJSON();
-    userObject.person = updatedUser.person;
-    userObject.roles = updatedUser.roles;
+const update = async (id, data) => {
+    let user = await dbAdapter.userAdapter.getById(id);
+    if (!user) {
+        throw new Error('User not found');
+    }
 
-    return userObject;
+    // Update Person details if present
+    if (data.person) {
+        await dbAdapter.personAdapter.update(user.person, data.person);
+        delete data.person; // Prevent full person object update in user model
+    }
+
+    // Update user record
+    return await dbAdapter.userAdapter.update(id, data);
 };
 
 const remove = async (id) => {
-    const user = await User.findById(id);
-
+    let user = await dbAdapter.userAdapter.getById(id);
     if (!user) {
-        const error = new Error('User not found');
-        error.status = 404;
-        throw error;
+        throw new Error('User not found');
     }
 
-    return await User.findByIdAndUpdate(id, { deletedAt: new Date() }, { new: true });
+    // Soft delete user
+    return await dbAdapter.userAdapter.update(id, { deletedAt: new Date() });
 };
 
 module.exports = {

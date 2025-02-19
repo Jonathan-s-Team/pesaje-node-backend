@@ -5,7 +5,8 @@ const { getAllByUserId, getById, create, update, remove } = require('../services
 const getAllBrokersByUserId = async (req, res = response) => {
     try {
         const { userId } = req.query;
-        const brokers = await getAllByUserId(userId);
+        const includeDeleted = req.query.includeDeleted === 'true';
+        const brokers = await getAllByUserId(userId, includeDeleted);
         res.json({ ok: true, data: brokers });
     } catch (error) {
         res.status(500).json({ ok: false, message: error.message });
