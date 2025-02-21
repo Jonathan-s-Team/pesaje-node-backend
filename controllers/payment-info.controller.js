@@ -1,6 +1,6 @@
 const { response } = require('express');
 
-const { create, getAll, getById, remove, update } = require('../services/paymentInfo.service');
+const { create, getAll, getById, remove, update } = require('../services/payment-info.service');
 
 
 const createPaymentInfo = async (req, res = response) => {
@@ -21,7 +21,9 @@ const createPaymentInfo = async (req, res = response) => {
 const getPaymentInfosByPerson = async (req, res = response) => {
     try {
         const { personId } = req.query; // Extract userId from query params
-        const paymentInfos = await getAll(personId); // Pass personId to service
+        const includeDeleted = req.query.includeDeleted === 'true';
+
+        const paymentInfos = await getAll(personId, includeDeleted); // Pass personId to service
 
         res.status(200).json({
             ok: true,

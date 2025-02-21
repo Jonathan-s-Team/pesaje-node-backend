@@ -16,7 +16,6 @@ const validateJWT = (req, res = response, next) => {
             msg: 'Authorization header missing or malformed'
         });
     }
-
     // Extract the token after "Bearer "
     const token = authHeader.split(' ')[1];
 
@@ -38,6 +37,7 @@ const validateJWT = (req, res = response, next) => {
         req.username = username;
 
     } catch (error) {
+        console.log(error)
         return res.status(401).json({
             ok: false,
             msg: 'Invalid token'

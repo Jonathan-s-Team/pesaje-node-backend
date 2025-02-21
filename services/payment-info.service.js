@@ -1,6 +1,4 @@
-
-const { PaymentInfo, Person } = require('../models');
-
+const dbAdapter = require('../adapters');
 
 const create = async (data) => {
     const { personId, ...paymentData } = data;
@@ -11,7 +9,7 @@ const create = async (data) => {
     }
 
     // Check if the `Person` exists in the database
-    const person = await Person.findById(personId);
+    const person = await dbAdapter.personAdapter.getById(personId);
     if (!person) {
         throw new Error('Person not found');
     }
@@ -22,36 +20,35 @@ const create = async (data) => {
         person: personId
     };
 
-    return await PaymentInfo.create(paymentInfoData);
+    return await dbAdapter.paymentInfoAdapter.create(paymentInfoData);
 };
 
 
-const getAll = async (personId) => {
-    let query = {}; // Default: fetch all payment info
+const getAll = async (personId, includeDeleted = false) => {
+    const query = includeDeleted ? {} : { deletedAt: null };
 
     if (personId) {
         // Check if the person exists in the database
-        const person = await Person.findById(personId);
+        const person = await dbAdapter.personAdapter.getById(personId);
         if (!person) {
             throw new Error('Person not found');
         }
-        query = { person: personId }; // Filter by personId
+        query.person = personId; // Filter by personId
     }
 
-    return await PaymentInfo.find(query);
+    return await dbAdapter.paymentInfoAdapter.getAll(query);
 };
 
 
 
 const getById = async (id) => {
-    return await PaymentInfo.findById(id);
+    return await dbAdapter.paymentInfoAdapter.getById(id);
 };
 
 const update = async (id, data) => {
     delete data.personId; // Ensure `personId` is not updated
 
-    const updatedPaymentInfo = await PaymentInfo.findByIdAndUpdate(id, data, { new: true });
-
+    const updatedPaymentInfo = await dbAdapter.paymentInfoAdapter.update(id, data);
     if (!updatedPaymentInfo) {
         throw new Error('Payment info not found');
     }
@@ -61,15 +58,12 @@ const update = async (id, data) => {
 
 
 const remove = async (id) => {
-    const paymentInfo = await PaymentInfo.findById(id);
-
+    const paymentInfo = await dbAdapter.paymentInfoAdapter.getById(id);
     if (!paymentInfo) {
-        const error = new Error('PaymentInfo not found');
-        error.status = 404;
-        throw error;
+        throw new Error('PaymentInfo not found');
     }
 
-    return await PaymentInfo.findByIdAndUpdate(id, { deletedAt: new Date() }, { new: true });
+    return await dbAdapter.paymentInfoAdapter.update(id, { deletedAt: new Date() });
 };
 
 

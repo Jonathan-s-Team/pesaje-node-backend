@@ -1,11 +1,22 @@
 const { response } = require('express');
 
-const { getAllByUserId, getById, create, update, remove } = require('../services/broker.service');
+const { getAllByUserId, getAll, getById, create, update, remove } = require('../services/broker.service');
 
 const getAllBrokersByUserId = async (req, res = response) => {
     try {
         const { userId } = req.query;
-        const brokers = await getAllByUserId(userId);
+        const includeDeleted = req.query.includeDeleted === 'true';
+        const brokers = await getAllByUserId(userId, includeDeleted);
+        res.json({ ok: true, data: brokers });
+    } catch (error) {
+        res.status(500).json({ ok: false, message: error.message });
+    }
+};
+
+const getAllBrokers = async (req, res = response) => {
+    try {
+        const includeDeleted = req.query.includeDeleted === 'true';
+        const brokers = await getAll(includeDeleted);
         res.json({ ok: true, data: brokers });
     } catch (error) {
         res.status(500).json({ ok: false, message: error.message });
@@ -59,6 +70,7 @@ const removeBroker = async (req, res) => {
 
 module.exports = {
     getAllBrokersByUserId,
+    getAllBrokers,
     getBrokerById,
     createBroker,
     updateBroker,

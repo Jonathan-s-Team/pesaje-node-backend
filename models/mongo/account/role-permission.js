@@ -1,6 +1,6 @@
 const { Schema, model } = require('mongoose');
+const PermissionEnum = require('../../../enums/permission.enum');
 
-const Permission = require('../../enums/permission.enum');
 
 const RolePermissionSchema = Schema({
 
@@ -14,7 +14,7 @@ const RolePermissionSchema = Schema({
     },
     actions: [{
         type: String,
-        enum: Permission
+        enum: PermissionEnum
     }],
 });
 

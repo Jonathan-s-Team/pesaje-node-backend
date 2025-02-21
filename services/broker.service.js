@@ -1,30 +1,81 @@
-const { Broker, User, Person } = require('../models');
+const dbAdapter = require('../adapters');
 
-const getAllByUserId = async (userId) => {
-    let brokersArray = [];
+const getAllByUserId = async (userId, includeDeleted = false) => {
+    const query = includeDeleted ? { buyerItBelongs: userId } : { buyerItBelongs: userId, deletedAt: null };
 
-    const brokers = await Broker.find({ buyerItBelongs: userId }).populate('person');
-    brokers.forEach(broker => {
-        const { person, ...brokerObject } = broker.toJSON();
-        brokerObject.person = broker.person;
-        brokersArray.push(brokerObject);
-    });
+    // Fetch brokers with `person` relation
+    const brokers = await dbAdapter.brokerAdapter.getAllWithRelations(query, ['person']);
 
-    return brokersArray;
+    // Extract unique `buyerItBelongs` user IDs to minimize queries
+    const buyerUserIds = [...new Set(brokers.map(b => b.buyerItBelongs).filter(Boolean))];
+
+    // Fetch all buyer users and their person details in a single query
+    const buyerUsers = await dbAdapter.userAdapter.getAllWithRelations({ _id: { $in: buyerUserIds } }, ['person']);
+
+    // Create a lookup map for `buyerItBelongs`
+    const buyerMap = buyerUsers.reduce((acc, user) => {
+        acc[user.id] = {
+            id: user.id,
+            fullName: user.person ? `${user.person.names} ${user.person.lastNames}`.trim() : 'Unknown'
+        };
+        return acc;
+    }, {});
+
+    // Map brokers, enriching `buyerItBelongs`
+    return brokers.map(({ person, buyerItBelongs, ...brokerObject }) => ({
+        ...brokerObject,
+        person,
+        buyerItBelongs: buyerItBelongs ? buyerMap[buyerItBelongs] || null : null // Assign from lookup
+    }));
 };
 
-const getById = async (id) => {
-    const broker = await Broker.findById(id).populate('person');
+const getAll = async (includeDeleted = false) => {
+    const query = includeDeleted ? {} : { deletedAt: null };
 
-    const { person, ...brokerObject } = broker.toJSON();
-    brokerObject.person = broker.person;
+    // Fetch all brokers with `person` relation
+    const brokers = await dbAdapter.brokerAdapter.getAllWithRelations(query, ['person']);
+
+    // Extract unique `buyerItBelongs` user IDs to minimize queries
+    const buyerUserIds = [...new Set(brokers.map(b => b.buyerItBelongs).filter(Boolean))];
+
+    // Fetch all buyer users and their person details in a single query
+    const buyerUsers = await dbAdapter.userAdapter.getAllWithRelations({ _id: { $in: buyerUserIds } }, ['person']);
+
+    // Create a lookup map for `buyerItBelongs`
+    const buyerMap = buyerUsers.reduce((acc, user) => {
+        acc[user.id] = {
+            id: user.id,
+            fullName: user.person ? `${user.person.names} ${user.person.lastNames}`.trim() : 'Unknown'
+        };
+        return acc;
+    }, {});
+
+    // Map brokers, enriching `buyerItBelongs`
+    return brokers.map(({ person, buyerItBelongs, ...brokerObject }) => ({
+        ...brokerObject,
+        person,
+        buyerItBelongs: buyerItBelongs ? buyerMap[buyerItBelongs] || null : null // Assign from lookup
+    }));
+};
+
+
+
+const getById = async (id) => {
+    const broker = await dbAdapter.brokerAdapter.getByIdWithRelations(id, ['person']);
+
+    if (!broker) {
+        throw new Error('Broker not found');
+    }
+
+    const { person, ...brokerObject } = broker;
+    brokerObject.person = person;
 
     return brokerObject;
 };
 
 const create = async (data) => {
     // Ensure the buyer exists in the database
-    const userExists = await User.findById(data.buyerItBelongs);
+    const userExists = await dbAdapter.userAdapter.getById(data.buyerItBelongs);
     if (!userExists) {
         throw new Error('Buyer (buyerItBelongs) does not exist');
     }
@@ -34,57 +85,46 @@ const create = async (data) => {
     }
 
     // Create the Person document first
-    const person = new Person(data.person);
-    const savedPerson = await person.save();
+    const person = await dbAdapter.personAdapter.create(data.person);
 
     // Now create the Broker referencing the created Person
-    const broker = new Broker({
-        person: savedPerson._id, // Reference the newly created Person
+    return await dbAdapter.brokerAdapter.create({
+        person: person.id, // Reference the newly created Person
         buyerItBelongs: data.buyerItBelongs
     });
-
-    return await broker.save();
 };
 
 const update = async (id, data) => {
-    const broker = await Broker.findById(id);
+    const broker = await dbAdapter.brokerAdapter.getById(id);
     if (!broker) {
         throw new Error('Broker not found');
     }
 
     // If person data is included, update the referenced Person document
     if (data.person) {
-        await Person.findByIdAndUpdate(broker.person, data.person, { new: true, runValidators: true });
+        await dbAdapter.personAdapter.update(broker.person, data.person);
     }
 
-    // Remove buyerItBelongs from the update data to prevent it from being modified
+    // Prevent updating `buyerItBelongs`
     const updateData = { ...data };
     delete updateData.buyerItBelongs;
     delete updateData.person;
 
-    const updatedBroker = await Broker.findByIdAndUpdate(id, updateData, { new: true, runValidators: true }).populate('person');
-
-    const { person, ...brokerObject } = updatedBroker.toJSON();
-    brokerObject.person = updatedBroker.person;
-
-    return brokerObject;
+    return await dbAdapter.brokerAdapter.update(id, updateData);
 };
 
-
 const remove = async (id) => {
-    const broker = await Broker.findById(id);
-
+    const broker = await dbAdapter.brokerAdapter.getById(id);
     if (!broker) {
-        const error = new Error('Broker not found');
-        error.status = 404;
-        throw error;
+        throw new Error('Broker not found');
     }
 
-    return await Broker.findByIdAndUpdate(id, { deletedAt: new Date() }, { new: true });
+    return await dbAdapter.brokerAdapter.update(id, { deletedAt: new Date() });
 };
 
 module.exports = {
     getAllByUserId,
+    getAll,
     getById,
     create,
     update,
