@@ -2,16 +2,17 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 const { generateJWT } = require('../helpers/jwt');
-const { RolePermission, User } = require('../models');
+const dbAdapter = require('../adapters');
 
 
 const loginUser = async (username, password) => {
     try {
-        const user = await User.findOne({ username });
-
-        if (!user) {
+        const users = await dbAdapter.userAdapter.getAllWithRelations({ username }, ['person']);
+        if (!users.length) {
             throw new Error('Invalid credentials');
         }
+
+        const user = users[0];
 
         // Verify the password 
         const isMatch = await bcrypt.compare(password, user.password);
@@ -22,7 +23,7 @@ const loginUser = async (username, password) => {
         // Generate JWT token (access token) - expires in 1 hour
         const authToken = await generateJWT(
             {
-                id: user._id,
+                id: user.id,
                 username: user.username,
                 email: user.person.email
             }, process.env.AUTH_TOKEN_EXPIRE_IN || '1h');
@@ -30,7 +31,7 @@ const loginUser = async (username, password) => {
         // Generate Refresh Token - expires in 7 days
         const refreshToken = await generateJWT(
             {
-                id: user._id,
+                id: user.id,
             }, process.env.REFRESH_TOKEN_EXPIRE_IN || '7d');
 
         // Convert expiresIn to a Date object (current time + 1 hour)
@@ -54,7 +55,7 @@ const revalidateAuthToken = async (refreshToken) => {
         const decoded = jwt.verify(refreshToken, process.env.SECRET_JWT_SEED || 'secretKey');
 
         // Fetch user from database
-        const user = await User.findById(decoded.id);
+        const user = await dbAdapter.userAdapter.getByIdWithRelations(decoded.id, ['person']);
         if (!user) {
             throw new Error('User not found');
         }
@@ -62,7 +63,7 @@ const revalidateAuthToken = async (refreshToken) => {
         // Generate new auth token
         const newAuthToken = await generateJWT(
             {
-                id: user._id,
+                id: user.id,
                 username: user.username,
                 email: user.person.email
             }, process.env.AUTH_TOKEN_EXPIRE_IN || '1h');
@@ -80,13 +81,13 @@ const revalidateAuthToken = async (refreshToken) => {
 const getUserById = async (id) => {
     try {
         // Fetch user from database
-        const user = await User.findById(id).populate('person');
+        const user = await dbAdapter.userAdapter.getByIdWithRelations(id, ['person', 'roles']);
         if (!user) {
             throw new Error('User not found');
         }
 
         // Permissions
-        const rolePermissions = await RolePermission.find({ role: { $in: user.roles.map(role => role._id) } });
+        const rolePermissions = await dbAdapter.rolePermissionAdapter.getAll({ role: { $in: user.roles.map(role => role.id) } });
 
         const optionsMap = {};
 
@@ -100,11 +101,11 @@ const getUserById = async (id) => {
             rolePerm.actions.forEach(action => optionsMap[optionId].add(action));
         });
 
-        const optionsData = await Option.find({ _id: { $in: Object.keys(optionsMap) } });
+        const optionsData = await dbAdapter.optionAdapter.getAll({ _id: { $in: Object.keys(optionsMap) } });
 
         const optionsArray = optionsData.map(opt => {
             return {
-                id: opt._id,
+                id: opt.id,
                 name: opt.name,
                 parentOption: opt.parentOption,
                 route: opt.route,
@@ -152,12 +153,11 @@ const getUserById = async (id) => {
 
         return {
             user: {
-                id: user._id,
+                id: user.id,
                 username: user.username,
-                // firstname: user.person.names,
-                // lastname: user.person.lastNames,
                 fullname: `${user.person.names} ${user.person.lastNames}`,
                 email: user.person.email,
+                roles: user.roles,
             },
             permissions: nestedOptions,
         };

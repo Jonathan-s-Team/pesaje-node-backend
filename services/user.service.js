@@ -32,30 +32,37 @@ const create = async (data) => {
 const getAll = async (includeDeleted = false) => {
     const query = includeDeleted ? {} : { deletedAt: null };
 
+    let users;
+
     // Ensure population works for MongoDB (not needed in relational DBs)
     if (process.env.DB_TYPE === 'mongo') {
-        return await dbAdapter.userAdapter.getAllWithRelations(query, ['person', 'roles']);
+        users = await dbAdapter.userAdapter.getAllWithRelations(query, ['person', 'roles']);
+    } else {
+        // Fetch all users from the adapter (for relational databases)
+        users = await dbAdapter.userAdapter.getAll(query);
     }
 
-    // Fetch all users from the adapter (for relational databases)
-    return await dbAdapter.userAdapter.getAll(query);
+    // Exclude password field from all users
+    return users.map(({ password, ...user }) => user);
 };
 
-
 const getById = async (id) => {
-    // Fetch user from the adapter
-    const user = await dbAdapter.userAdapter.getById(id);
+    let user = await dbAdapter.userAdapter.getById(id);
+
     if (!user) {
         throw new Error('User not found');
     }
 
     // Ensure population for MongoDB (skip for SQL databases)
     if (process.env.DB_TYPE === 'mongo') {
-        return await dbAdapter.userAdapter.getByIdWithRelations(id, ['person', 'roles']);
+        user = await dbAdapter.userAdapter.getByIdWithRelations(id, ['person', 'roles']);
     }
 
-    return user;
+    // Exclude password field
+    const { password, ...safeUser } = user;
+    return safeUser;
 };
+
 
 const update = async (id, data) => {
     let user = await dbAdapter.userAdapter.getById(id);
