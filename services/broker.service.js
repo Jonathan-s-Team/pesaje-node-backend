@@ -3,14 +3,62 @@ const dbAdapter = require('../adapters');
 const getAllByUserId = async (userId, includeDeleted = false) => {
     const query = includeDeleted ? { buyerItBelongs: userId } : { buyerItBelongs: userId, deletedAt: null };
 
-    // Fetch brokers with the correct relation
+    // Fetch brokers with `person` relation
     const brokers = await dbAdapter.brokerAdapter.getAllWithRelations(query, ['person']);
 
-    return brokers.map(({ person, ...brokerObject }) => ({
+    // Extract unique `buyerItBelongs` user IDs to minimize queries
+    const buyerUserIds = [...new Set(brokers.map(b => b.buyerItBelongs).filter(Boolean))];
+
+    // Fetch all buyer users and their person details in a single query
+    const buyerUsers = await dbAdapter.userAdapter.getAllWithRelations({ _id: { $in: buyerUserIds } }, ['person']);
+
+    // Create a lookup map for `buyerItBelongs`
+    const buyerMap = buyerUsers.reduce((acc, user) => {
+        acc[user.id] = {
+            id: user.id,
+            fullName: user.person ? `${user.person.names} ${user.person.lastNames}`.trim() : 'Unknown'
+        };
+        return acc;
+    }, {});
+
+    // Map brokers, enriching `buyerItBelongs`
+    return brokers.map(({ person, buyerItBelongs, ...brokerObject }) => ({
         ...brokerObject,
-        person
+        person,
+        buyerItBelongs: buyerItBelongs ? buyerMap[buyerItBelongs] || null : null // Assign from lookup
     }));
 };
+
+const getAll = async (includeDeleted = false) => {
+    const query = includeDeleted ? {} : { deletedAt: null };
+
+    // Fetch all brokers with `person` relation
+    const brokers = await dbAdapter.brokerAdapter.getAllWithRelations(query, ['person']);
+
+    // Extract unique `buyerItBelongs` user IDs to minimize queries
+    const buyerUserIds = [...new Set(brokers.map(b => b.buyerItBelongs).filter(Boolean))];
+
+    // Fetch all buyer users and their person details in a single query
+    const buyerUsers = await dbAdapter.userAdapter.getAllWithRelations({ _id: { $in: buyerUserIds } }, ['person']);
+
+    // Create a lookup map for `buyerItBelongs`
+    const buyerMap = buyerUsers.reduce((acc, user) => {
+        acc[user.id] = {
+            id: user.id,
+            fullName: user.person ? `${user.person.names} ${user.person.lastNames}`.trim() : 'Unknown'
+        };
+        return acc;
+    }, {});
+
+    // Map brokers, enriching `buyerItBelongs`
+    return brokers.map(({ person, buyerItBelongs, ...brokerObject }) => ({
+        ...brokerObject,
+        person,
+        buyerItBelongs: buyerItBelongs ? buyerMap[buyerItBelongs] || null : null // Assign from lookup
+    }));
+};
+
+
 
 const getById = async (id) => {
     const broker = await dbAdapter.brokerAdapter.getByIdWithRelations(id, ['person']);
@@ -76,6 +124,7 @@ const remove = async (id) => {
 
 module.exports = {
     getAllByUserId,
+    getAll,
     getById,
     create,
     update,

@@ -2,7 +2,7 @@ const express = require('express');
 const { check, query } = require('express-validator');
 const router = express.Router();
 
-const { getAllBrokersByUserId, getBrokerById, createBroker, updateBroker, removeBroker } = require('../controllers/broker.controller');
+const { getAllBrokersByUserId, getAllBrokers, getBrokerById, createBroker, updateBroker, removeBroker } = require('../controllers/broker.controller');
 const { validateFields } = require('../middlewares/validate-fields');
 const { validateJWT } = require('../middlewares/validate-jwt');
 
@@ -26,6 +26,24 @@ router.get(
     ],
     getAllBrokersByUserId
 );
+
+router.get(
+    '/all',
+    [
+        query('includeDeleted')
+            .optional()
+            .custom(value => {
+                if (value !== 'true' && value !== 'false') {
+                    throw new Error('includeDeleted must be either true or false');
+                }
+                return true;
+            }),
+        validateFields, // Ensure this is included to process validation
+        validateJWT
+    ],
+    getAllBrokers
+);
+
 router.get('/:id', validateJWT, getBrokerById);
 
 router.post(
