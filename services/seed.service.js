@@ -124,9 +124,15 @@ const seedOptions = async () => {
             parentOption: optionPerfilPersonal,
         });
 
+        const optionUsers = await Option.create({
+            name: 'Usuarios',
+            route: 'personal-profile/users',
+            parentOption: optionPerfilPersonal,
+        });
+
         const optionBroker = await Option.create({
-            name: 'Broker',
-            route: 'personal-profile/broker',
+            name: 'Brokers',
+            route: 'personal-profile/brokers',
             parentOption: optionPerfilPersonal,
         });
 
@@ -189,27 +195,52 @@ const seedPermissions = async (options, roles) => {
                 actions: [Permission.VIEW, Permission.EDIT],
             });
 
-            const optionBroker = await Option.findOne({ name: 'Broker' });
+            const optionBrokers = await Option.findOne({ name: 'Brokers' });
             switch (role.name) {
                 case 'Admin':
                     await RolePermission.create({
                         role,
-                        option: optionBroker,
+                        option: optionBrokers,
                         actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
                     });
                     break;
                 case 'Secretaria':
                     await RolePermission.create({
                         role,
-                        option: optionBroker,
+                        option: optionBrokers,
                         actions: [Permission.VIEW, Permission.EDIT],
                     });
                     break;
                 case 'Comprador':
                     await RolePermission.create({
                         role,
-                        option: optionBroker,
+                        option: optionBrokers,
                         actions: [Permission.VIEW, Permission.ADD],
+                    });
+                    break;
+            }
+
+            const optionUsers = await Option.findOne({ name: 'Usuarios' });
+            switch (role.name) {
+                case 'Admin':
+                    await RolePermission.create({
+                        role,
+                        option: optionUsers,
+                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD, Permission.DELETE],
+                    });
+                    break;
+                case 'Secretaria':
+                    await RolePermission.create({
+                        role,
+                        option: optionUsers,
+                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
+                    });
+                    break;
+                case 'Comprador':
+                    await RolePermission.create({
+                        role,
+                        option: optionUsers,
+                        actions: [],
                     });
                     break;
             }
