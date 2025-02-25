@@ -48,7 +48,7 @@ const updateBroker = async (req, res = response) => {
     try {
         const broker = await update(req.params.id, req.body);
         if (!broker) {
-            return res.status(404).json({ ok: false, message: 'Broker not found' });
+            return res.status(404).json({ ok: false, message: 'Broker not found or already deleted' });
         }
         res.json({ ok: true, data: broker });
     } catch (error) {

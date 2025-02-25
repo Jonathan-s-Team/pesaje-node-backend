@@ -10,6 +10,7 @@ const { validateJWT } = require('../middlewares/validate-jwt');
 router.get(
     '/',
     [
+        validateJWT,
         query('userId')
             .isMongoId()
             .withMessage('Invalid user ID format'), // Ensure personId is a valid ObjectId
@@ -22,7 +23,6 @@ router.get(
                 return true;
             }),
         validateFields, // Ensure this is included to process validation
-        validateJWT
     ],
     getAllBrokersByUserId
 );
@@ -30,6 +30,7 @@ router.get(
 router.get(
     '/all',
     [
+        validateJWT,
         query('includeDeleted')
             .optional()
             .custom(value => {
@@ -39,7 +40,6 @@ router.get(
                 return true;
             }),
         validateFields, // Ensure this is included to process validation
-        validateJWT
     ],
     getAllBrokers
 );
@@ -49,6 +49,7 @@ router.get('/:id', validateJWT, getBrokerById);
 router.post(
     '/',
     [
+        validateJWT,
         // Validate embedded person fields
         check('person.names', 'Names are required').notEmpty(),
         check('person.lastNames', 'Last names are required').notEmpty(),
@@ -63,7 +64,6 @@ router.post(
         // Validate buyer ID
         check('buyerItBelongs', 'User ID is required').isMongoId(),
         validateFields,
-        validateJWT
     ],
     createBroker
 );
@@ -71,6 +71,7 @@ router.post(
 router.put(
     '/:id',
     [
+        validateJWT,
         check('person.names', 'Names are required').optional().notEmpty(),
         check('person.lastNames', 'Last names are required').optional().notEmpty(),
         check('person.identification', 'Identification is required').optional().notEmpty(),
@@ -84,7 +85,6 @@ router.put(
         // Validate buyer ID
         check('buyerItBelongs', 'User ID is required').optional().isMongoId(),
         validateFields,
-        validateJWT
     ],
     updateBroker
 );
