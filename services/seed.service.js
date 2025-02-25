@@ -2,7 +2,7 @@
 
 const bcrypt = require('bcryptjs');
 
-const { Option, Role, RolePermission, User, PaymentInfo, Person } = require('../models');
+const { Option, Role, RolePermission, User, PaymentInfo, Person, Broker, Client } = require('../models');
 const Permission = require('../enums/permission.enum');
 
 
@@ -94,6 +94,8 @@ const seedDatabase = async () => {
 
 const cleanDatabase = async () => {
     console.log('Cleaning database...');
+    await Broker.deleteMany({});
+    await Client.deleteMany({});
     await Option.deleteMany({});
     await PaymentInfo.deleteMany({});
     await Person.deleteMany({});
@@ -134,6 +136,13 @@ const seedOptions = async () => {
             name: 'Brokers',
             route: 'personal-profile/brokers',
             parentOption: optionPerfilPersonal,
+        });
+
+        // Clientes 
+        const optionClientes = await Option.create({
+            name: 'Clientes',
+            route: '/clients',
+            icon: 'people',
         });
 
 
@@ -201,7 +210,7 @@ const seedPermissions = async (options, roles) => {
                     await RolePermission.create({
                         role,
                         option: optionBrokers,
-                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
+                        actions: [Permission.VIEW, Permission.EDIT, Permission.DELETE],
                     });
                     break;
                 case 'Secretaria':
@@ -241,6 +250,34 @@ const seedPermissions = async (options, roles) => {
                         role,
                         option: optionUsers,
                         actions: [],
+                    });
+                    break;
+            }
+        });
+
+        // Opción: Clientes
+        const optionClientes = await Option.findOne({ name: 'Clientes' });
+        roles.forEach(async (role) => {
+            switch (role.name) {
+                case 'Admin':
+                    await RolePermission.create({
+                        role,
+                        option: optionClientes,
+                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD, Permission.DELETE],
+                    });
+                    break;
+                case 'Secretaria':
+                    await RolePermission.create({
+                        role,
+                        option: optionClientes,
+                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
+                    });
+                    break;
+                case 'Comprador':
+                    await RolePermission.create({
+                        role,
+                        option: optionClientes,
+                        actions: [Permission.VIEW, Permission.ADD],
                     });
                     break;
             }

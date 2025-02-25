@@ -37,7 +37,7 @@ const validateJWT = (req, res = response, next) => {
         req.username = username;
 
     } catch (error) {
-        console.log(error)
+        console.log(error.message)
         return res.status(401).json({
             ok: false,
             msg: 'Invalid token'
