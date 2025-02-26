@@ -4,6 +4,7 @@ const dbType = process.env.DB_TYPE || 'mongo';
 const accountModelsPath = `./${dbType}/account`;
 const profileModelsPath = `./${dbType}/profile`;
 const clientModelsPath = `./${dbType}/client`;
+const priceModelsPath = `./${dbType}/price`;
 
 // Import account models
 const User = require(`${accountModelsPath}/user`);
@@ -20,6 +21,10 @@ const PaymentInfo = require(`${profileModelsPath}/payment-info`);
 const Client = require(`${clientModelsPath}/client`);
 const ShrimpFarm = require(`${clientModelsPath}/shrimp-farm`);
 
+// Import client models
+const Size = require(`${priceModelsPath}/size`);
+const Company = require(`${priceModelsPath}/company`);
+
 console.log(`Using ${dbType.toUpperCase()} Models`);
 
 module.exports = {
@@ -32,4 +37,6 @@ module.exports = {
     Client,
     PaymentInfo,
     ShrimpFarm,
+    Size,
+    Company,
 };

@@ -2,8 +2,9 @@
 
 const bcrypt = require('bcryptjs');
 
-const { Option, Role, RolePermission, User, PaymentInfo, Person, Broker, Client } = require('../models');
+const { Option, Role, RolePermission, User, PaymentInfo, Person, Broker, Client, Size, Company } = require('../models');
 const Permission = require('../enums/permission.enum');
+const SizeTypeEnum = require('../enums/sizy-type.enum');
 
 
 const seedDatabase = async () => {
@@ -12,6 +13,9 @@ const seedDatabase = async () => {
     await seedOptions();
     const { adminRole, secretariaRole, compradorRole } = await seedRoles();
     await seedPermissions();
+
+    await seedCompanies();
+    await seedSizes();
 
     // Encriptar contraseña
     const salt = bcrypt.genSaltSync();
@@ -102,6 +106,8 @@ const cleanDatabase = async () => {
     await Role.deleteMany({});
     await RolePermission.deleteMany({});
     await User.deleteMany({});
+    await Size.deleteMany({});
+    await Company.deleteMany({});
     console.log('Cleaning completed');
 };
 
@@ -286,6 +292,124 @@ const seedPermissions = async (options, roles) => {
         throw new Error('Error seeding permissions: ' + error.message);
     }
 };
+
+const seedCompanies = async () => {
+    try {
+        // EDPACIFIC 
+        const company1 = await Company.create({
+            name: 'Edpacific',
+        });
+
+        const company2 = await Company.create({
+            name: 'Prodex',
+        });
+    } catch (error) {
+        throw new Error('Error seeding companies: ' + error.message);
+    }
+}
+
+const seedSizes = async () => {
+    try {
+        // WHOLE 
+        const size1 = await Size.create({
+            size: '20/30',
+            type: SizeTypeEnum.WHOLE
+        });
+
+        const size2 = await Size.create({
+            size: '30/40',
+            type: SizeTypeEnum.WHOLE
+        });
+
+        const size3 = await Size.create({
+            size: '40/50',
+            type: SizeTypeEnum.WHOLE
+        });
+
+        const size4 = await Size.create({
+            size: '50/60',
+            type: SizeTypeEnum.WHOLE
+        });
+
+        const size5 = await Size.create({
+            size: '60/70',
+            type: SizeTypeEnum.WHOLE
+        });
+
+        const size6 = await Size.create({
+            size: '70/80',
+            type: SizeTypeEnum.WHOLE
+        });
+
+        const size7 = await Size.create({
+            size: '80/100',
+            type: SizeTypeEnum.WHOLE
+        });
+
+        const size8 = await Size.create({
+            size: '100/120',
+            type: SizeTypeEnum.WHOLE
+        });
+
+        // HEADLESS 
+        const size9 = await Size.create({
+            size: '16/20',
+            type: SizeTypeEnum.HEADLESS
+        });
+
+        const size10 = await Size.create({
+            size: '21/25',
+            type: SizeTypeEnum.HEADLESS
+        });
+
+        const size11 = await Size.create({
+            size: '26/30',
+            type: SizeTypeEnum.HEADLESS
+        });
+
+        const size12 = await Size.create({
+            size: '31/35',
+            type: SizeTypeEnum.HEADLESS
+        });
+
+        const size13 = await Size.create({
+            size: '36/40',
+            type: SizeTypeEnum.HEADLESS
+        });
+
+        const size14 = await Size.create({
+            size: '41/50',
+            type: SizeTypeEnum.HEADLESS
+        });
+
+        const size15 = await Size.create({
+            size: '51/60',
+            type: SizeTypeEnum.HEADLESS
+        });
+
+        const size16 = await Size.create({
+            size: '61/70',
+            type: SizeTypeEnum.HEADLESS
+        });
+
+        const size17 = await Size.create({
+            size: '71/90',
+            type: SizeTypeEnum.HEADLESS
+        });
+
+        const size18 = await Size.create({
+            size: '91/110',
+            type: SizeTypeEnum.HEADLESS
+        });
+
+        const size19 = await Size.create({
+            size: '110/130',
+            type: SizeTypeEnum.HEADLESS
+        });
+    } catch (error) {
+        throw new Error('Error seeding sizes: ' + error.message);
+    }
+}
 
 module.exports = {
     seedDatabase
