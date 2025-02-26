@@ -3,6 +3,7 @@ const dbType = process.env.DB_TYPE || 'mongo';
 // Load models dynamically based on DB_TYPE
 const accountModelsPath = `./${dbType}/account`;
 const profileModelsPath = `./${dbType}/profile`;
+const clientModelsPath = `./${dbType}/client`;
 
 // Import account models
 const User = require(`${accountModelsPath}/user`);
@@ -13,8 +14,11 @@ const RolePermission = require(`${accountModelsPath}/role-permission`);
 // Import profile models
 const Person = require(`${profileModelsPath}/person`);
 const Broker = require(`${profileModelsPath}/broker`);
-const Client = require(`${profileModelsPath}/client`);
 const PaymentInfo = require(`${profileModelsPath}/payment-info`);
+
+// Import client models
+const Client = require(`${clientModelsPath}/client`);
+const ShrimpFarm = require(`${clientModelsPath}/shrimp-farm`);
 
 console.log(`Using ${dbType.toUpperCase()} Models`);
 
@@ -26,5 +30,6 @@ module.exports = {
     Person,
     Broker,
     Client,
-    PaymentInfo
+    PaymentInfo,
+    ShrimpFarm,
 };
