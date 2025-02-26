@@ -34,6 +34,7 @@ app.use('/api/payment-info', require('./routes/payment-info.routes'));
 app.use('/api/role', require('./routes/role.routes'));
 app.use('/api/broker', require('./routes/broker.routes'));
 app.use('/api/client', require('./routes/client.routes'));
+app.use('/api/shrimp-farm', require('./routes/shrimp-farm.routes'));
 
 
 // Escuchar peticiones

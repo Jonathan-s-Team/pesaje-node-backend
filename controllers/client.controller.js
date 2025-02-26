@@ -37,7 +37,7 @@ const getClientById = async (req, res = response) => {
 const createClient = async (req, res = response) => {
     try {
         const client = await create(req.body, req.id);
-        res.status(201).json({ ok: true, message: 'Client created successfully' });
+        res.status(201).json({ ok: true, message: 'Client created successfully', data: client });
     } catch (error) {
         console.error(`Error creating client: ${error.message}`);
         res.status(400).json({ ok: false, message: error.message });

@@ -38,7 +38,7 @@ const getBrokerById = async (req, res = response) => {
 const createBroker = async (req, res = response) => {
     try {
         const broker = await create(req.body);
-        res.status(201).json({ ok: true, message: 'Broker created successfully' });
+        res.status(201).json({ ok: true, message: 'Broker created successfully', data: broker });
     } catch (error) {
         res.status(500).json({ ok: false, message: error.message });
     }

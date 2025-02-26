@@ -1,8 +1,8 @@
 const PermissionEnum = Object.freeze({
-    VIEW: 'View',
-    EDIT: 'Edit',
-    ADD: 'Add',
-    DELETE: 'Delete',
+    VIEW: 'VIEW',
+    EDIT: 'EDIT',
+    ADD: 'ADD',
+    DELETE: 'DELETE',
 });
 
 module.exports = PermissionEnum;

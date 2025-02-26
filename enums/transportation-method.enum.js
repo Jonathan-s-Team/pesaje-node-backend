@@ -1,6 +1,6 @@
 const TransportationMethodEnum = Object.freeze({
-    CAR: 'Car',
-    CARBOAT: 'Car&Boat',
+    CAR: 'CAR',
+    CARBOAT: 'CARBOAT',
 });
 
 module.exports = TransportationMethodEnum;

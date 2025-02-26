@@ -21,11 +21,11 @@ const ShrimpFarmSchema = Schema({
     enum: TransportationMethodEnum,
     required: true
   },
-  distanceToGate: {
+  distanceToGate: { // meters
     type: Number,
     required: true
   },
-  timeFromPedernales: {
+  timeFromPedernales: { //minutes
     type: Number,
     required: true
   },

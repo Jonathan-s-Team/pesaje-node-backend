@@ -8,7 +8,8 @@ const createPaymentInfo = async (req, res = response) => {
         const paymentInfo = await create(req.body);
         res.status(201).json({
             ok: true,
-            message: "PaymentInfo created successfully"
+            message: "PaymentInfo created successfully",
+            data: paymentInfo
         });
     } catch (error) {
         res.status(400).json({

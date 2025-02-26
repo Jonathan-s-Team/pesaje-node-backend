@@ -9,7 +9,8 @@ const createUser = async (req, res = response) => {
         const user = await create(req.body);
         res.status(201).json({
             ok: true,
-            message: "User created successfully"
+            message: "User created successfully",
+            data: user
         });
     } catch (error) {
         res.status(400).json({
