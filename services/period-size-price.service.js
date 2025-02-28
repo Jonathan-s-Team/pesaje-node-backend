@@ -7,7 +7,7 @@ const getByNameAndCompany = async (name, companyId) => {
 
     // Find the period by name and company
     const periods = await dbAdapter.periodAdapter.getAllWithRelations(
-        { name, company: companyId, deletedAt: null },
+        { name, company: companyId },
         ['company']
     );
 
@@ -46,7 +46,7 @@ const create = async (data) => {
     }
 
     // Extract size IDs from the request
-    const sizeIds = data.sizePrices ? data.sizePrices.map(sp => sp.id) : [];
+    const sizeIds = data.sizePrices ? data.sizePrices.map(sp => sp.sizeId) : [];
 
     // Validate all sizes exist
     if (sizeIds.length > 0) {
@@ -70,7 +70,7 @@ const create = async (data) => {
         sizePrices = await Promise.all(
             data.sizePrices.map(async (sp) => {
                 return dbAdapter.sizePriceAdapter.create({
-                    size: sp.id,
+                    size: sp.sizeId,
                     price: sp.price,
                     period: period.id
                 });
@@ -82,45 +82,55 @@ const create = async (data) => {
 };
 
 
-const update = async (id, data) => {
-    const period = await dbAdapter.periodAdapter.getById(id);
+const update = async (periodId, data) => {
+    const { name, sizePrices } = data;
+
+    // Find the period
+    const period = await dbAdapter.periodAdapter.getById(periodId);
     if (!period) {
         throw new Error('Period not found');
     }
 
-    // Update Period
-    const updatedPeriod = await dbAdapter.periodAdapter.update(id, data);
+    // If `sizePrices` is provided, validate that all `sizeId`s exist first
+    if (sizePrices && sizePrices.length > 0) {
+        const sizeIds = sizePrices.map(sp => sp.sizeId);
+        const existingSizes = await dbAdapter.sizeAdapter.getAll({ _id: { $in: sizeIds } });
 
-    // If sizePrices are provided, update them
-    let updatedSizePrices = [];
-    if (data.sizePrices && Array.isArray(data.sizePrices)) {
-        await Promise.all(
-            data.sizePrices.map(async (sp) => {
-                if (sp.id) {
-                    // Update existing SizePrice record
-                    const existingSizePrice = await dbAdapter.sizePriceAdapter.getById(sp.id);
-                    if (existingSizePrice) {
-                        await dbAdapter.sizePriceAdapter.update(sp.id, {
-                            size: sp.size,
-                            price: sp.price
-                        });
-                    }
-                } else {
-                    // Create new SizePrice record
-                    updatedSizePrices.push(
-                        await dbAdapter.sizePriceAdapter.create({
-                            size: sp.size,
-                            price: sp.price,
-                            period: id
-                        })
-                    );
-                }
-            })
-        );
+        if (existingSizes.length !== sizeIds.length) {
+            throw new Error('One or more sizeIds provided do not exist. No updates were performed.');
+        }
     }
 
-    return { ...updatedPeriod, updatedSizePrices };
+    // Start applying updates only if all checks pass
+    if (name) {
+        await dbAdapter.periodAdapter.update(periodId, { name });
+    }
+
+    // Update or create sizePrices
+    if (sizePrices && sizePrices.length > 0) {
+        for (let sp of sizePrices) {
+            const existingSizePrice = await dbAdapter.sizePriceAdapter.getAll({
+                size: sp.sizeId,
+                period: period.id
+            });
+
+            if (existingSizePrice.length > 0) {
+                // Update existing sizePrice
+                await dbAdapter.sizePriceAdapter.update(existingSizePrice[0].id, { price: sp.price });
+            } else {
+                // Create new sizePrice if it doesn't exist
+                await dbAdapter.sizePriceAdapter.create({
+                    size: sp.sizeId,
+                    price: sp.price,
+                    period: period.id
+                });
+            }
+        }
+    }
+
+    return { ...period, name, sizePrices };
 };
+
 
 const remove = async (id) => {
     const period = await dbAdapter.periodAdapter.getById(id);
@@ -131,10 +141,7 @@ const remove = async (id) => {
     // Soft delete the Period
     await dbAdapter.periodAdapter.update(id, { deletedAt: new Date() });
 
-    // Soft delete related SizePrice records
-    await dbAdapter.sizePriceAdapter.updateMany({ period: id }, { deletedAt: new Date() });
-
-    return { message: 'Period and associated SizePrices deleted successfully' };
+    return { message: 'Period deleted successfully' };
 };
 
 module.exports = {

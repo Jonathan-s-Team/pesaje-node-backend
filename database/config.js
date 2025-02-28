@@ -9,10 +9,7 @@ const dbConnection = async () => {
 
         if (dbType === 'mongo') {
             // Connect to MongoDB
-            await mongoose.connect(process.env.DB_CNN, {
-                useNewUrlParser: true,
-                useUnifiedTopology: true
-            });
+            await mongoose.connect(process.env.DB_CNN);
 
             console.log('MongoDB connected');
 
