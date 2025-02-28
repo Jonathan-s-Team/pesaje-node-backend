@@ -154,6 +154,13 @@ const seedOptions = async () => {
             icon: 'people',
         });
 
+        // Precios 
+        const optionPrecios = await Option.create({
+            name: 'Precios',
+            route: '/prices',
+            icon: 'price-tag',
+        });
+
 
     } catch (error) {
         throw new Error('Error seeding options: ' + error.message);
@@ -302,6 +309,34 @@ const seedPermissions = async (options, roles) => {
                         role,
                         option: optionClientes,
                         actions: [Permission.VIEW, Permission.ADD],
+                    });
+                    break;
+            }
+        });
+
+        // Opción: Precios
+        const optionPrecios = await Option.findOne({ name: 'Precios' });
+        roles.forEach(async (role) => {
+            switch (role.name) {
+                case 'Admin':
+                    await RolePermission.create({
+                        role,
+                        option: optionPrecios,
+                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD, Permission.DELETE],
+                    });
+                    break;
+                case 'Secretaria':
+                    await RolePermission.create({
+                        role,
+                        option: optionPrecios,
+                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
+                    });
+                    break;
+                case 'Comprador':
+                    await RolePermission.create({
+                        role,
+                        option: optionPrecios,
+                        actions: [Permission.VIEW],
                     });
                     break;
             }
