@@ -38,13 +38,16 @@ const ShrimpFarmSchema = Schema({
     type: Date,
     default: null
   }
-});
+},
+  { timestamps: true },
+);
+
 
 ShrimpFarmSchema.index({ client: 1, identifier: 1 }, { unique: true });
 
 
 ShrimpFarmSchema.method('toJSON', function () {
-  const { __v, _id, ...object } = this.toObject();
+  const { __v, _id, createdAt, updatedAt, ...object } = this.toObject();
   object.id = _id;
   return object;
 });

@@ -1,4 +1,4 @@
-const { User, Role, Broker, PaymentInfo, Person, RolePermission, Option, Client, ShrimpFarm } = require('../models');
+const { User, Role, Broker, PaymentInfo, Person, RolePermission, Option, Client, ShrimpFarm, Period, SizePrice, Company, Size } = require('../models');
 const MongooseGenericAdapter = require('./mongoose-generic-adapter');
 
 // If you have another adapter (e.g., PostgreSQL):
@@ -15,10 +15,14 @@ if (dbType === 'mongo') {
     brokerAdapter = new MongooseGenericAdapter(Broker, ['person']); // If Broker has a relation with Person
     paymentInfoAdapter = new MongooseGenericAdapter(PaymentInfo, ['person']); // If PaymentInfo has Person relation
     roleAdapter = new MongooseGenericAdapter(Role);
+    companyAdapter = new MongooseGenericAdapter(Company);
+    sizeAdapter = new MongooseGenericAdapter(Size);
     rolePermissionAdapter = new MongooseGenericAdapter(RolePermission);
     optionAdapter = new MongooseGenericAdapter(Option);
     clientAdapter = new MongooseGenericAdapter(Client, ['person', 'buyersItBelongs', 'createdBy']);
     shrimpFarmAdapter = new MongooseGenericAdapter(ShrimpFarm, ['client']);
+    periodAdapter = new MongooseGenericAdapter(Period, ['company']);
+    sizePriceAdapter = new MongooseGenericAdapter(SizePrice);
 }
 // else if (dbType === 'postgres') {
 //     userAdapter = new PostgresGenericAdapter('User'); // Example usage for Sequelize
@@ -27,4 +31,4 @@ if (dbType === 'mongo') {
 //     throw new Error(`Unsupported DB_TYPE: ${dbType}`);
 // }
 
-module.exports = { userAdapter, personAdapter, brokerAdapter, paymentInfoAdapter, roleAdapter, rolePermissionAdapter, optionAdapter, clientAdapter, shrimpFarmAdapter };
+module.exports = { userAdapter, personAdapter, brokerAdapter, paymentInfoAdapter, roleAdapter, companyAdapter, sizeAdapter, rolePermissionAdapter, optionAdapter, clientAdapter, shrimpFarmAdapter, periodAdapter, sizePriceAdapter };

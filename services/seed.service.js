@@ -2,9 +2,10 @@
 
 const bcrypt = require('bcryptjs');
 
-const { Option, Role, RolePermission, User, PaymentInfo, Person, Broker, Client, Size, Company } = require('../models');
+const { Option, Role, RolePermission, User, PaymentInfo, Person, Broker, Client, Size, Company, Period, SizePrice } = require('../models');
 const Permission = require('../enums/permission.enum');
 const SizeTypeEnum = require('../enums/sizy-type.enum');
+const { default: mongoose } = require('mongoose');
 
 
 const seedDatabase = async () => {
@@ -108,6 +109,8 @@ const cleanDatabase = async () => {
     await User.deleteMany({});
     await Size.deleteMany({});
     await Company.deleteMany({});
+    await Period.deleteMany({});
+    await SizePrice.deleteMany({});
     console.log('Cleaning completed');
 };
 
@@ -159,24 +162,39 @@ const seedOptions = async () => {
 
 const seedRoles = async () => {
     try {
+        // Define fixed IDs for catalog roles
+        const fixedRoles = [
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4c01"), name: "Admin" },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4c02"), name: "Secretaria" },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4c03"), name: "Comprador" }
+        ];
 
-        const adminRole = await Role.create({
-            name: 'Admin',
-        });
+        // Map role names to variables
+        let adminRole, secretariaRole, compradorRole;
 
-        const secretariaRole = await Role.create({
-            name: 'Secretaria',
-        });
+        // Insert only if the role does not exist
+        await Promise.all(
+            fixedRoles.map(async (role) => {
+                let existingRole = await Role.findById(role._id);
+                if (!existingRole) {
+                    existingRole = await Role.create(role);
+                    console.log(`✅ Inserted role: ${role.name}`);
+                } else {
+                    console.log(`⚠️ Role already exists: ${role.name}, skipping...`);
+                }
 
-        const compradorRole = await Role.create({
-            name: 'Comprador',
-        });
+                // Assign to variables
+                if (role.name === "Admin") adminRole = existingRole;
+                if (role.name === "Secretaria") secretariaRole = existingRole;
+                if (role.name === "Comprador") compradorRole = existingRole;
+            })
+        );
 
-        return {
-            adminRole, secretariaRole, compradorRole
-        };
+        console.log("✅ Roles seeding complete.");
+        return { adminRole, secretariaRole, compradorRole };
     } catch (error) {
-        throw new Error('Error seeding roles: ' + error.message);
+        console.error("❌ Error seeding roles:", error.message);
+        throw new Error("Error seeding roles: " + error.message);
     }
 };
 
@@ -295,121 +313,75 @@ const seedPermissions = async (options, roles) => {
 
 const seedCompanies = async () => {
     try {
-        // EDPACIFIC 
-        const company1 = await Company.create({
-            name: 'Edpacific',
-        });
+        // Define fixed IDs for catalog companies
+        const fixedCompanies = [
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4a01"), name: "Edpacific" },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4a02"), name: "Prodex" }
+        ];
 
-        const company2 = await Company.create({
-            name: 'Prodex',
-        });
+        // Insert companies only if they do not exist
+        await Promise.all(
+            fixedCompanies.map(async (company) => {
+                const existingCompany = await Company.findById(company._id);
+                if (!existingCompany) {
+                    await Company.create(company);
+                    console.log(`✅ Inserted company: ${company.name}`);
+                } else {
+                    console.log(`⚠️ Company already exists: ${company.name}, skipping...`);
+                }
+            })
+        );
+
+        console.log('✅ Companies seeding complete.');
     } catch (error) {
-        throw new Error('Error seeding companies: ' + error.message);
+        console.error('❌ Error seeding companies:', error.message);
     }
-}
+};
 
 const seedSizes = async () => {
     try {
-        // WHOLE 
-        const size1 = await Size.create({
-            size: '20/30',
-            type: SizeTypeEnum.WHOLE
-        });
+        // Define fixed IDs for catalog sizes
+        const fixedSizes = [
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b10"), size: "20/30", type: SizeTypeEnum.WHOLE },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b11"), size: "30/40", type: SizeTypeEnum.WHOLE },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b12"), size: "40/50", type: SizeTypeEnum.WHOLE },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b13"), size: "50/60", type: SizeTypeEnum.WHOLE },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b14"), size: "60/70", type: SizeTypeEnum.WHOLE },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b15"), size: "70/80", type: SizeTypeEnum.WHOLE },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b16"), size: "80/100", type: SizeTypeEnum.WHOLE },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b17"), size: "100/120", type: SizeTypeEnum.WHOLE },
 
-        const size2 = await Size.create({
-            size: '30/40',
-            type: SizeTypeEnum.WHOLE
-        });
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b18"), size: "16/20", type: SizeTypeEnum.HEADLESS },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b19"), size: "21/25", type: SizeTypeEnum.HEADLESS },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b20"), size: "26/30", type: SizeTypeEnum.HEADLESS },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b21"), size: "31/35", type: SizeTypeEnum.HEADLESS },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b22"), size: "36/40", type: SizeTypeEnum.HEADLESS },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b23"), size: "41/50", type: SizeTypeEnum.HEADLESS },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b24"), size: "51/60", type: SizeTypeEnum.HEADLESS },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b25"), size: "61/70", type: SizeTypeEnum.HEADLESS },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b26"), size: "71/90", type: SizeTypeEnum.HEADLESS },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b27"), size: "91/110", type: SizeTypeEnum.HEADLESS },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b28"), size: "110/130", type: SizeTypeEnum.HEADLESS }
+        ];
 
-        const size3 = await Size.create({
-            size: '40/50',
-            type: SizeTypeEnum.WHOLE
-        });
+        // Insert only if the size does not exist
+        await Promise.all(
+            fixedSizes.map(async (size) => {
+                const existingSize = await Size.findById(size._id);
+                if (!existingSize) {
+                    await Size.create(size);
+                    console.log(`✅ Inserted size: ${size.size} (${size.type})`);
+                } else {
+                    console.log(`⚠️ Size already exists: ${size.size} (${size.type}), skipping...`);
+                }
+            })
+        );
 
-        const size4 = await Size.create({
-            size: '50/60',
-            type: SizeTypeEnum.WHOLE
-        });
-
-        const size5 = await Size.create({
-            size: '60/70',
-            type: SizeTypeEnum.WHOLE
-        });
-
-        const size6 = await Size.create({
-            size: '70/80',
-            type: SizeTypeEnum.WHOLE
-        });
-
-        const size7 = await Size.create({
-            size: '80/100',
-            type: SizeTypeEnum.WHOLE
-        });
-
-        const size8 = await Size.create({
-            size: '100/120',
-            type: SizeTypeEnum.WHOLE
-        });
-
-        // HEADLESS 
-        const size9 = await Size.create({
-            size: '16/20',
-            type: SizeTypeEnum.HEADLESS
-        });
-
-        const size10 = await Size.create({
-            size: '21/25',
-            type: SizeTypeEnum.HEADLESS
-        });
-
-        const size11 = await Size.create({
-            size: '26/30',
-            type: SizeTypeEnum.HEADLESS
-        });
-
-        const size12 = await Size.create({
-            size: '31/35',
-            type: SizeTypeEnum.HEADLESS
-        });
-
-        const size13 = await Size.create({
-            size: '36/40',
-            type: SizeTypeEnum.HEADLESS
-        });
-
-        const size14 = await Size.create({
-            size: '41/50',
-            type: SizeTypeEnum.HEADLESS
-        });
-
-        const size15 = await Size.create({
-            size: '51/60',
-            type: SizeTypeEnum.HEADLESS
-        });
-
-        const size16 = await Size.create({
-            size: '61/70',
-            type: SizeTypeEnum.HEADLESS
-        });
-
-        const size17 = await Size.create({
-            size: '71/90',
-            type: SizeTypeEnum.HEADLESS
-        });
-
-        const size18 = await Size.create({
-            size: '91/110',
-            type: SizeTypeEnum.HEADLESS
-        });
-
-        const size19 = await Size.create({
-            size: '110/130',
-            type: SizeTypeEnum.HEADLESS
-        });
+        console.log("✅ Sizes seeding complete.");
     } catch (error) {
-        throw new Error('Error seeding sizes: ' + error.message);
+        console.error("❌ Error seeding sizes:", error.message);
     }
-}
+};
 
 module.exports = {
     seedDatabase

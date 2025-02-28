@@ -32,9 +32,12 @@ app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/user', require('./routes/user.routes'));
 app.use('/api/payment-info', require('./routes/payment-info.routes'));
 app.use('/api/role', require('./routes/role.routes'));
+app.use('/api/company', require('./routes/company.routes'));
+app.use('/api/size', require('./routes/size.routes'));
 app.use('/api/broker', require('./routes/broker.routes'));
 app.use('/api/client', require('./routes/client.routes'));
 app.use('/api/shrimp-farm', require('./routes/shrimp-farm.routes'));
+app.use('/api/period', require('./routes/period-size-price.routes'));
 
 
 // Escuchar peticiones

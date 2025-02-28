@@ -13,10 +13,12 @@ const SizeSchema = Schema({
     enum: SizeTypeEnum,
     required: true
   },
-});
+},
+  { timestamps: true },
+);
 
 SizeSchema.method('toJSON', function () {
-  const { __v, _id, ...object } = this.toObject();
+  const { __v, _id, createdAt, updatedAt, ...object } = this.toObject();
   object.id = _id;
   return object;
 });

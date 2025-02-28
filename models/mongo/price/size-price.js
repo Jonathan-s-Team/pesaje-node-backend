@@ -1,35 +1,29 @@
 const { Schema, model } = require('mongoose');
 
-const ClientSchema = Schema({
+const SizePriceSchema = Schema({
 
-  person: {
+  size: {
     type: Schema.Types.ObjectId,
-    ref: 'Person',
+    ref: 'Size',
     required: true
   },
-  buyersItBelongs: [{
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  }],
-  createdBy: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
+  price: {
+    type: Number,
     required: true
   },
-  deletedAt: {
-    type: Date,
-    default: null
-  }
+  period: {
+    type: Schema.Types.ObjectId,
+    ref: 'Period',
+    required: true
+  },
 },
   { timestamps: true },
 );
 
-
-ClientSchema.method('toJSON', function () {
+SizePriceSchema.method('toJSON', function () {
   const { __v, _id, createdAt, updatedAt, ...object } = this.toObject();
   object.id = _id;
   return object;
 });
 
-module.exports = model('Client', ClientSchema);
+module.exports = model('SizePrice', SizePriceSchema);

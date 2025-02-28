@@ -11,10 +11,13 @@ const RoleSchema = Schema({
         type: Date,
         default: null
     }
-});
+},
+    { timestamps: true },
+);
+
 
 RoleSchema.method('toJSON', function () {
-    const { __v, _id, ...object } = this.toObject();
+    const { __v, _id, createdAt, updatedAt, ...object } = this.toObject();
     object.id = _id;
     return object;
 });

@@ -24,6 +24,8 @@ const ShrimpFarm = require(`${clientModelsPath}/shrimp-farm`);
 // Import client models
 const Size = require(`${priceModelsPath}/size`);
 const Company = require(`${priceModelsPath}/company`);
+const Period = require(`${priceModelsPath}/period`);
+const SizePrice = require(`${priceModelsPath}/size-price`);
 
 console.log(`Using ${dbType.toUpperCase()} Models`);
 
@@ -39,4 +41,6 @@ module.exports = {
     ShrimpFarm,
     Size,
     Company,
+    Period,
+    SizePrice,
 };

@@ -46,10 +46,13 @@ const PersonSchema = new Schema({
         type: String,
         required: true
     },
-});
+},
+    { timestamps: true },
+);
+
 
 PersonSchema.method('toJSON', function () {
-    const { __v, _id, ...object } = this.toObject();
+    const { __v, _id, createdAt, updatedAt, ...object } = this.toObject();
     object.id = _id;
     return object;
 });

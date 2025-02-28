@@ -16,6 +16,9 @@ const RolePermissionSchema = Schema({
         type: String,
         enum: PermissionEnum
     }],
-});
+},
+    { timestamps: true },
+);
+
 
 module.exports = model('RolePermission', RolePermissionSchema);
