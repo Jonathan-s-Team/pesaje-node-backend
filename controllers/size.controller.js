@@ -3,7 +3,9 @@ const { getAll } = require('../services/size.service');
 
 const getSizes = async (req, res = response) => {
     try {
-        const data = await getAll();
+        const { type } = req.query;
+        const data = await getAll(type);
+
         res.status(200).json({
             ok: true,
             data,
