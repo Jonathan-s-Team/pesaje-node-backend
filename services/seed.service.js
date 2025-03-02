@@ -11,11 +11,11 @@ const { default: mongoose } = require('mongoose');
 const seedDatabase = async (keepTxData = false) => {
     await cleanDatabase(keepTxData);
 
-    await seedOptions();
     await seedCompanies();
-    await seedPermissions();
     await seedSizes();
+    await seedOptions();
     const { adminRole, secretariaRole, compradorRole } = await seedRoles();
+    await seedPermissions();
 
     // Encriptar contraseña
     const salt = bcrypt.genSaltSync();
@@ -208,7 +208,7 @@ const seedRoles = async () => {
     }
 };
 
-const seedPermissions = async (options, roles) => {
+const seedPermissions = async () => {
     try {
         const roles = await Role.find();
 
