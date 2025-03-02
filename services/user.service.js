@@ -29,8 +29,29 @@ const create = async (data) => {
     });
 };
 
-const getAll = async (includeDeleted = false) => {
+const getAll = async (includeDeleted = false, role = null) => {
     const query = includeDeleted ? {} : { deletedAt: null };
+
+    let roleIds = [];
+
+    if (role) {
+        // 🔹 Handle multiple roles (comma-separated)
+        const rolesArray = role.split(',').map(r => r.trim());
+
+        // 🔹 Fetch role ObjectIds based on name
+        const rolesList = await dbAdapter.roleAdapter.getAll({ name: { $in: rolesArray } });
+
+        if (!rolesList.length) {
+            throw new Error(`Invalid role(s): ${role}. Allowed roles: Admin, Secretaria, Comprador`);
+        }
+
+        roleIds = rolesList.map(roleObj => roleObj.id); // Extract ObjectIds
+    }
+
+    // Apply role filtering if valid roleIds exist
+    if (roleIds.length) {
+        query.roles = { $in: roleIds }; // Allow users with any of the selected roles
+    }
 
     let users;
 
@@ -45,6 +66,8 @@ const getAll = async (includeDeleted = false) => {
     // Exclude password field from all users
     return users.map(({ password, ...user }) => user);
 };
+
+
 
 const getById = async (id) => {
     let user = await dbAdapter.userAdapter.getById(id);

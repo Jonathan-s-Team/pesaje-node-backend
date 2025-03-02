@@ -134,19 +134,19 @@ const seedOptions = async () => {
         // Perfil Personal
         const optionMiPerfil = await Option.create({
             name: 'Mi Perfil',
-            route: 'personal-profile/my-profile',
+            route: '/personal-profile/my-profile',
             parentOption: optionPerfilPersonal,
         });
 
         const optionUsers = await Option.create({
             name: 'Usuarios',
-            route: 'personal-profile/users',
+            route: '/personal-profile/users',
             parentOption: optionPerfilPersonal,
         });
 
         const optionBroker = await Option.create({
             name: 'Brokers',
-            route: 'personal-profile/brokers',
+            route: '/personal-profile/brokers',
             parentOption: optionPerfilPersonal,
         });
 

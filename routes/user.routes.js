@@ -12,6 +12,7 @@ const { validateJWT } = require('../middlewares/validate-jwt');
 router.post(
     '/',
     [
+        validateJWT,
         // User fields validation
         check('username', 'Username is required').not().isEmpty(),
         check('password', 'Password must be at least 6 characters long').isLength({ min: 6 }),
@@ -29,12 +30,14 @@ router.post(
         check('person.emergencyContactPhone', 'Emergency contact phone is required').not().isEmpty(),
 
         validateFields,
-        validateJWT
     ],
     createUser
 );
+
+const validRoles = ["Admin", "Secretaria", "Comprador"];
 router.get('/',
     [
+        validateJWT,
         query('includeDeleted')
             .optional()
             .custom(value => {
@@ -43,14 +46,23 @@ router.get('/',
                 }
                 return true;
             }),
+        query('role')
+            .optional()
+            .custom(value => {
+                if (!validRoles.includes(value)) {
+                    throw new Error(`Invalid role. Allowed roles: ${validRoles.join(', ')}`);
+                }
+                return true;
+            }),
         validateFields,
-        validateJWT,
     ],
     getUsers);
+
 router.get('/:id', validateJWT, getUserById);
 router.put(
     '/:id',
     [
+        validateJWT,
         param('id').isMongoId().withMessage('Invalid User ID format'),
         // User update validation (optional fields)
         check('username', 'Username cannot be empty').optional().not().isEmpty(),
@@ -69,7 +81,6 @@ router.put(
         check('person.emergencyContactPhone', 'Emergency contact phone cannot be empty').optional().not().isEmpty(),
 
         validateFields,
-        validateJWT
     ],
     updateUser
 );

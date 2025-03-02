@@ -7,8 +7,34 @@ const getAllByUserId = async (userId, includeDeleted = false) => {
         ? { buyersItBelongs: { $in: [userId] } }
         : { buyersItBelongs: { $in: [userId] }, deletedAt: null };
 
-    return await dbAdapter.clientAdapter.getAllWithRelations(query, ['person']);
+    // Fetch all clients with person relation
+    const clients = await dbAdapter.clientAdapter.getAllWithRelations(query, ['person']);
+
+    // Extract all unique buyer IDs
+    const buyerIds = [...new Set(clients.flatMap(client => client.buyersItBelongs))];
+
+    // Fetch all buyers in one call (avoiding multiple DB calls in a loop)
+    const buyers = await dbAdapter.userAdapter.getAllWithRelations(
+        { _id: { $in: buyerIds } },
+        ['person']
+    );
+
+    // Create a lookup map for fast access
+    const buyerMap = buyers.reduce((acc, buyer) => {
+        acc[buyer.id] = {
+            id: buyer.id,
+            fullname: buyer.person ? `${buyer.person.names} ${buyer.person.lastNames}`.trim() : null
+        };
+        return acc;
+    }, {});
+
+    // Replace `buyersItBelongs` with enriched data
+    return clients.map(client => ({
+        ...client,
+        buyersItBelongs: client.buyersItBelongs.map(buyerId => buyerMap[buyerId] || { id: buyerId, fullname: null })
+    }));
 };
+
 
 
 const getAll = async (includeDeleted = false) => {

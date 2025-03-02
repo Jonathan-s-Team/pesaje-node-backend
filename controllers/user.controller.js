@@ -23,7 +23,10 @@ const createUser = async (req, res = response) => {
 const getUsers = async (req, res = response) => {
     try {
         const includeDeleted = req.query.includeDeleted === 'true';
-        const users = await getAll(includeDeleted);
+        const role = req.query.role || null; // Extract role from query params
+
+        const users = await getAll(includeDeleted, role); // Pass role filter
+
         res.status(200).json({
             ok: true,
             users,
@@ -35,6 +38,7 @@ const getUsers = async (req, res = response) => {
         });
     }
 };
+
 
 const getUserById = async (req, res = response) => {
     try {
