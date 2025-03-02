@@ -1,19 +1,8 @@
 const dbAdapter = require('../adapters');
 
-const getByIdAndCompany = async (id, companyId) => {
-    if (!id || !companyId) {
-        throw new Error('Both id and companyId are required');
-    }
-
-    // Find the period by name and company
-    const periods = await dbAdapter.periodAdapter.getAllWithRelations(
-        { _id: id, company: companyId },
-        ['company']
-    );
-
-    if (!periods.length) return null;
-
-    const period = periods[0]; // Get the first matching period
+const getById = async (id) => {
+    // Find the period by id
+    const period = await dbAdapter.periodAdapter.getById(id);
 
     // Fetch all related `sizePrices` for the found period
     const sizePrices = await dbAdapter.sizePriceAdapter.getAllWithRelations(
@@ -188,7 +177,7 @@ const remove = async (id) => {
 };
 
 module.exports = {
-    getByIdAndCompany,
+    getById,
     getAllByCompany,
     create,
     update,

@@ -1,13 +1,12 @@
 const { response } = require('express');
-const { getByIdAndCompany, getAllByCompany, create, update, remove } = require('../services/period-size-price.service');
+const { getById, getAllByCompany, create, update, remove } = require('../services/period-size-price.service');
 
-const getPeriodByIdAndCompany = async (req, res = response) => {
+const getPeriodById = async (req, res = response) => {
     try {
         const id = req.params.id;
-        const { companyId } = req.query;
 
         // Fetch period by id and company, including sizePrices
-        const period = await getByIdAndCompany(id, companyId);
+        const period = await getById(req.params.id);
 
         if (!period) {
             return res.status(404).json({ ok: false, message: 'Period not found' });
@@ -65,7 +64,7 @@ const removePeriod = async (req, res) => {
 };
 
 module.exports = {
-    getPeriodByIdAndCompany,
+    getPeriodById,
     getAllPeriodsByCompany,
     createPeriod,
     updatePeriod,
