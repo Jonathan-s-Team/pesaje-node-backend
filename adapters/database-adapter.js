@@ -18,6 +18,13 @@ class DatabaseAdapter {
     async remove(id) {
         throw new Error('Method not implemented');
     }
+
+    /**
+     * Start a transaction (to be implemented by database-specific adapters)
+     */
+    async startTransaction() {
+        throw new Error('Method not implemented');
+    }
 }
 
 module.exports = DatabaseAdapter;

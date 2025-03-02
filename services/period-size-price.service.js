@@ -25,22 +25,7 @@ const getByNameAndCompany = async (name, companyId) => {
 };
 
 const create = async (data) => {
-    const existingPeriod = await dbAdapter.periodAdapter.getAll({
-        name: data.name,
-        company: data.company
-    });
-
-    if (existingPeriod.length > 0) {
-        throw new Error(`A period with the name "${data.name}" already exists for this company.`);
-    }
-
-    // Validate company exists
-    const companyExists = await dbAdapter.companyAdapter.getById(data.company);
-    if (!companyExists) {
-        throw new Error('Company does not exist');
-    }
-
-    // Validate sizePrices is an array
+    // ✅ Validate `sizePrices` BEFORE starting the transaction
     if (data.sizePrices && !Array.isArray(data.sizePrices)) {
         throw new Error('sizePrices must be an array');
     }
@@ -52,34 +37,73 @@ const create = async (data) => {
     if (sizeIds.length > 0) {
         const existingSizes = await dbAdapter.sizeAdapter.getAll({ _id: { $in: sizeIds } });
 
-        // Ensure all sizes exist
         if (existingSizes.length !== sizeIds.length) {
             throw new Error('One or more sizes do not exist');
         }
     }
 
-    // Create the Period
-    const period = await dbAdapter.periodAdapter.create({
-        name: data.name,
-        company: data.company
-    });
-
-    // Create SizePrice records
-    let sizePrices = [];
+    // ✅ Ensure `sizePrices` contain valid `sizeId` & `price` before transaction
     if (data.sizePrices) {
-        sizePrices = await Promise.all(
-            data.sizePrices.map(async (sp) => {
-                return dbAdapter.sizePriceAdapter.create({
-                    size: sp.sizeId,
-                    price: sp.price,
-                    period: period.id
-                });
-            })
-        );
+        for (const sp of data.sizePrices) {
+            if (!sp.sizeId || typeof sp.price !== 'number') {
+                throw new Error(`Missing or invalid price for sizeId: ${sp.sizeId || 'unknown'}`);
+            }
+        }
     }
 
-    return { ...period, sizePrices };
+    // ✅ Now start the transaction
+    const transaction = await dbAdapter.periodAdapter.startTransaction();
+    const session = transaction.session;
+
+    try {
+        // ✅ Check if the period already exists
+        const existingPeriod = await dbAdapter.periodAdapter.getAll(
+            { name: data.name, company: data.company },
+            { session }
+        );
+
+        if (existingPeriod.length > 0) {
+            throw new Error(`A period with the name "${data.name}" already exists for this company.`);
+        }
+
+        // ✅ Validate company exists
+        const companyExists = await dbAdapter.companyAdapter.getById(data.company, { session });
+        if (!companyExists) {
+            throw new Error('Company does not exist');
+        }
+
+        // ✅ Create the Period only after validation
+        const period = await dbAdapter.periodAdapter.create(
+            { name: data.name, company: data.company },
+            { session }
+        );
+
+        // ✅ Create SizePrice records
+        let sizePrices = [];
+        if (data.sizePrices) {
+            sizePrices = await Promise.all(
+                data.sizePrices.map(async (sp) => {
+                    return dbAdapter.sizePriceAdapter.create(
+                        { size: sp.sizeId, price: sp.price, period: period.id },
+                        { session }
+                    );
+                })
+            );
+        }
+
+        // ✅ Commit transaction (Save everything if successful)
+        await transaction.commit();
+        transaction.end();
+
+        return { ...period, sizePrices };
+    } catch (error) {
+        await transaction.rollback(); // Rollback changes if anything fails
+        transaction.end();
+        throw new Error(error.message); // Ensure error is thrown back to API
+    }
 };
+
+
 
 
 const update = async (periodId, data) => {

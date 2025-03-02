@@ -1,4 +1,5 @@
 const DatabaseAdapter = require('./database-adapter');
+const mongoose = require('mongoose');
 
 class MongooseGenericAdapter extends DatabaseAdapter {
     constructor(model, relations = []) {
@@ -46,6 +47,20 @@ class MongooseGenericAdapter extends DatabaseAdapter {
     async remove(id) {
         const deletedDocument = await this.model.findByIdAndUpdate(id, { deletedAt: new Date() }, { new: true });
         return deletedDocument ? this.transformDocument(deletedDocument) : null;
+    }
+
+    /**
+     * Start a MongoDB Transaction Session
+     */
+    async startTransaction() {
+        const session = await mongoose.startSession();
+        session.startTransaction();
+        return {
+            session,
+            commit: async () => await session.commitTransaction(),
+            rollback: async () => await session.abortTransaction(),
+            end: async () => await session.endSession()
+        };
     }
 
     /**
