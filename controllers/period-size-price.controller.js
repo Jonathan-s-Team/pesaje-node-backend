@@ -1,5 +1,5 @@
 const { response } = require('express');
-const { getByNameAndCompany, create, update, remove } = require('../services/period-size-price.service');
+const { getByNameAndCompany, getAllByCompany, create, update, remove } = require('../services/period-size-price.service');
 
 const getPeriodByNameAndCompany = async (req, res = response) => {
     try {
@@ -13,6 +13,18 @@ const getPeriodByNameAndCompany = async (req, res = response) => {
         }
 
         res.json({ ok: true, data: period });
+    } catch (error) {
+        res.status(500).json({ ok: false, message: error.message });
+    }
+};
+
+const getAllPeriodsByCompany = async (req, res = response) => {
+    try {
+        const { companyId } = req.query;
+
+        const periods = await getAllByCompany(companyId);
+
+        res.json({ ok: true, data: periods });
     } catch (error) {
         res.status(500).json({ ok: false, message: error.message });
     }
@@ -53,6 +65,7 @@ const removePeriod = async (req, res) => {
 
 module.exports = {
     getPeriodByNameAndCompany,
+    getAllPeriodsByCompany,
     createPeriod,
     updatePeriod,
     removePeriod

@@ -24,6 +24,25 @@ const getByNameAndCompany = async (name, companyId) => {
     return { ...period, sizePrices };
 };
 
+const getAllByCompany = async (companyId) => {
+    if (!companyId) {
+        throw new Error('CompanyId is required');
+    }
+
+    // Find the periods by company
+    const periods = await dbAdapter.periodAdapter.getAll({ company: companyId });
+
+    // Sort periods by name (MM-YYYY)
+    periods.sort((a, b) => {
+        const [monthA, yearA] = a.name.split('-').map(Number);
+        const [monthB, yearB] = b.name.split('-').map(Number);
+
+        return yearA - yearB || monthA - monthB; // Sort by year first, then month
+    });
+
+    return { periods };
+};
+
 const create = async (data) => {
     // ✅ Validate `sizePrices` BEFORE starting the transaction
     if (data.sizePrices && !Array.isArray(data.sizePrices)) {
@@ -170,6 +189,7 @@ const remove = async (id) => {
 
 module.exports = {
     getByNameAndCompany,
+    getAllByCompany,
     create,
     update,
     remove

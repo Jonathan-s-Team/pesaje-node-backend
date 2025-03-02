@@ -4,6 +4,7 @@ const { validateFields } = require('../middlewares/validate-fields');
 const { validateJWT } = require('../middlewares/validate-jwt');
 const {
     getPeriodByNameAndCompany,
+    getAllPeriodsByCompany,
     createPeriod,
     updatePeriod,
     removePeriod
@@ -13,7 +14,7 @@ const router = express.Router();
 
 // 🔹 Get period by name and company, including sizePrices
 router.get(
-    '/by-name',
+    '/by-name-company',
     [
         validateJWT,
         query('companyId').isMongoId().withMessage('Invalid company ID format'),
@@ -21,6 +22,17 @@ router.get(
         validateFields
     ],
     getPeriodByNameAndCompany
+);
+
+// 🔹 Get period by company
+router.get(
+    '/by-company',
+    [
+        validateJWT,
+        query('companyId').isMongoId().withMessage('Invalid company ID format'),
+        validateFields
+    ],
+    getAllPeriodsByCompany
 );
 
 // 🔹 Create a period with sizePrices
