@@ -1,6 +1,6 @@
 const { Schema, model } = require('mongoose');
 
-const SizeTypeEnum = require('../../../enums/sizy-type.enum');
+const SizeTypeEnum = require('../../../enums/size-type.enum');
 
 const SizeSchema = Schema({
 

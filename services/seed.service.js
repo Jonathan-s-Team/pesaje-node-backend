@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 
 const { Option, Role, RolePermission, User, PaymentInfo, Person, Broker, Client, Size, Company, Period, SizePrice } = require('../models');
 const Permission = require('../enums/permission.enum');
-const SizeTypeEnum = require('../enums/sizy-type.enum');
+const SizeTypeEnum = require('../enums/size-type.enum');
 const { default: mongoose } = require('mongoose');
 
 

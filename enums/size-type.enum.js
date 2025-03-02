@@ -1,6 +1,8 @@
 const SizeTypeEnum = Object.freeze({
     WHOLE: 'WHOLE',
-    HEADLESS: 'HEADLESS',
+    'TAIL-A': 'TAIL-A',
+    'TAIL-A-': 'TAIL-A-',
+    'TAIL-B': 'TAIL-B',
 });
 
 module.exports = SizeTypeEnum;
