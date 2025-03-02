@@ -3,7 +3,9 @@ const { seedDatabase } = require('../services/seed.service');
 
 const seedAllData = async (req, res = response) => {
     try {
-        const data = await seedDatabase();
+        const keepTxData = req.query.keepTxData === 'true';
+
+        const data = await seedDatabase(keepTxData);
         res.status(200).json({
             ok: true,
             message: 'All entities seeded successfully',
