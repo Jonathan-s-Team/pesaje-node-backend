@@ -1,13 +1,13 @@
 const dbAdapter = require('../adapters');
 
-const getByNameAndCompany = async (name, companyId) => {
-    if (!name || !companyId) {
-        throw new Error('Both name and companyId are required');
+const getByIdAndCompany = async (id, companyId) => {
+    if (!id || !companyId) {
+        throw new Error('Both id and companyId are required');
     }
 
     // Find the period by name and company
     const periods = await dbAdapter.periodAdapter.getAllWithRelations(
-        { name, company: companyId },
+        { _id: id, company: companyId },
         ['company']
     );
 
@@ -40,7 +40,7 @@ const getAllByCompany = async (companyId) => {
         return yearA - yearB || monthA - monthB; // Sort by year first, then month
     });
 
-    return { periods };
+    return periods;
 };
 
 const create = async (data) => {
@@ -188,7 +188,7 @@ const remove = async (id) => {
 };
 
 module.exports = {
-    getByNameAndCompany,
+    getByIdAndCompany,
     getAllByCompany,
     create,
     update,
