@@ -47,16 +47,15 @@ router.post(
     createPeriod
 );
 
-// 🔹 Update period (only name and sizePrices)
+// 🔹 Update period (only sizePrices)
 router.put(
     '/:id',
     [
         validateJWT,
         check('id', 'Invalid period ID').isMongoId(),
-        body('name').optional().notEmpty().withMessage('Name cannot be empty'),
+        body('name').not().exists().withMessage('Name cannot be updated'),
         body('company').not().exists().withMessage('Company cannot be updated'),
         body('sizePrices')
-            .optional()
             .isArray({ min: 1 })
             .withMessage('sizePrices must be an array with at least one entry'),
         body('sizePrices.*.sizeId')
@@ -69,6 +68,7 @@ router.put(
     ],
     updatePeriod
 );
+
 
 // 🔹 Soft delete a period
 router.delete(

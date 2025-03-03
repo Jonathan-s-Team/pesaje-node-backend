@@ -111,11 +111,8 @@ const create = async (data) => {
     }
 };
 
-
-
-
 const update = async (periodId, data) => {
-    const { name, sizePrices } = data;
+    const { sizePrices } = data;
 
     // Find the period
     const period = await dbAdapter.periodAdapter.getById(periodId);
@@ -123,44 +120,40 @@ const update = async (periodId, data) => {
         throw new Error('Period not found');
     }
 
-    // If `sizePrices` is provided, validate that all `sizeId`s exist first
-    if (sizePrices && sizePrices.length > 0) {
-        const sizeIds = sizePrices.map(sp => sp.sizeId);
-        const existingSizes = await dbAdapter.sizeAdapter.getAll({ _id: { $in: sizeIds } });
-
-        if (existingSizes.length !== sizeIds.length) {
-            throw new Error('One or more sizeIds provided do not exist. No updates were performed.');
-        }
+    // Validate that sizePrices is provided
+    if (!sizePrices || sizePrices.length === 0) {
+        throw new Error('sizePrices must be provided and cannot be empty.');
     }
 
-    // Start applying updates only if all checks pass
-    if (name) {
-        await dbAdapter.periodAdapter.update(periodId, { name });
+    // Validate that all `sizeId`s exist
+    const sizeIds = sizePrices.map(sp => sp.sizeId);
+    const existingSizes = await dbAdapter.sizeAdapter.getAll({ _id: { $in: sizeIds } });
+
+    if (existingSizes.length !== sizeIds.length) {
+        throw new Error('One or more sizeIds provided do not exist. No updates were performed.');
     }
 
     // Update or create sizePrices
-    if (sizePrices && sizePrices.length > 0) {
-        for (let sp of sizePrices) {
-            const existingSizePrice = await dbAdapter.sizePriceAdapter.getAll({
+    for (let sp of sizePrices) {
+        const existingSizePrice = await dbAdapter.sizePriceAdapter.getAll({
+            size: sp.sizeId,
+            period: period.id
+        });
+
+        if (existingSizePrice.length > 0) {
+            // Update existing sizePrice
+            await dbAdapter.sizePriceAdapter.update(existingSizePrice[0].id, { price: sp.price });
+        } else {
+            // Create new sizePrice if it doesn't exist
+            await dbAdapter.sizePriceAdapter.create({
                 size: sp.sizeId,
+                price: sp.price,
                 period: period.id
             });
-
-            if (existingSizePrice.length > 0) {
-                // Update existing sizePrice
-                await dbAdapter.sizePriceAdapter.update(existingSizePrice[0].id, { price: sp.price });
-            } else {
-                // Create new sizePrice if it doesn't exist
-                await dbAdapter.sizePriceAdapter.create({
-                    size: sp.sizeId,
-                    price: sp.price,
-                    period: period.id
-                });
-            }
         }
     }
 
-    return { ...period, name, sizePrices };
+    return { ...period, sizePrices };
 };
 
 

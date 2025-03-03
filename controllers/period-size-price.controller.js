@@ -42,16 +42,17 @@ const createPeriod = async (req, res = response) => {
 const updatePeriod = async (req, res = response) => {
     try {
         const { id } = req.params;
-        const { name, sizePrices } = req.body;
+        const { sizePrices } = req.body;
 
-        // Ensure only allowed fields are updated
-        const updatedPeriod = await update(id, { name, sizePrices });
+        // Ensure only `sizePrices` is updated
+        const updatedPeriod = await update(id, { sizePrices });
 
-        res.json({ ok: true, message: 'Period updated successfully', data: updatedPeriod });
+        res.json({ ok: true, message: 'Period sizePrices updated successfully', data: updatedPeriod });
     } catch (error) {
         res.status(500).json({ ok: false, message: error.message });
     }
 };
+
 
 
 const removePeriod = async (req, res) => {
