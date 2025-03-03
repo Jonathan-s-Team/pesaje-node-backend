@@ -2,7 +2,7 @@
 
 const bcrypt = require('bcryptjs');
 
-const { Option, Role, RolePermission, User, PaymentInfo, Person, Broker, Client, Size, Company, Period, SizePrice } = require('../models');
+const { Option, Role, RolePermission, User, PaymentInfo, Person, Broker, Client, Size, Company, Period, SizePrice, ShrimpFarm } = require('../models');
 const Permission = require('../enums/permission.enum');
 const SizeTypeEnum = require('../enums/size-type.enum');
 const { default: mongoose } = require('mongoose');
@@ -11,11 +11,11 @@ const { default: mongoose } = require('mongoose');
 const seedDatabase = async (keepTxData = false) => {
     await cleanDatabase(keepTxData);
 
-    await seedCompanies();
-    await seedSizes();
     await seedOptions();
     const { adminRole, secretariaRole, compradorRole } = await seedRoles();
     await seedPermissions();
+    await seedCompanies();
+    await seedSizes();
 
     // Encriptar contraseña
     const salt = bcrypt.genSaltSync();
@@ -23,8 +23,9 @@ const seedDatabase = async (keepTxData = false) => {
 
     if (!keepTxData) {
         // --- Step 1: Create one Person and one User for each role ---
-        // Admin User
+        // 🔹 Admin User
         const adminPerson = await Person.create({
+            _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4d01"), // Hardcoded ID
             photo: '',
             names: 'Admin',
             lastNames: 'User',
@@ -37,9 +38,10 @@ const seedDatabase = async (keepTxData = false) => {
             email: 'admin@example.com',
             emergencyContactName: 'Admin Emergency',
             emergencyContactPhone: '333-333-3333',
-            paymentInfos: [] // Adjust or remove as needed
+            paymentInfos: []
         });
         const adminUser = await User.create({
+            _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4d02"), // Hardcoded ID
             person: adminPerson._id,
             username: 'admin',
             email: 'admin@example.com',
@@ -47,8 +49,9 @@ const seedDatabase = async (keepTxData = false) => {
             roles: [adminRole._id]
         });
 
-        // Secretaria User
+        // 🔹 Secretaria User
         const secretariaPerson = await Person.create({
+            _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4d03"),
             photo: '',
             names: 'Secretaria',
             lastNames: 'User',
@@ -64,6 +67,7 @@ const seedDatabase = async (keepTxData = false) => {
             paymentInfos: []
         });
         const secretariaUser = await User.create({
+            _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4d04"),
             person: secretariaPerson._id,
             username: 'secre',
             email: 'secretaria@example.com',
@@ -71,8 +75,9 @@ const seedDatabase = async (keepTxData = false) => {
             roles: [secretariaRole._id]
         });
 
-        // Comprador User
+        // 🔹 Comprador User
         const compradorPerson = await Person.create({
+            _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4d05"),
             photo: '',
             names: 'Comprador',
             lastNames: 'User',
@@ -88,6 +93,7 @@ const seedDatabase = async (keepTxData = false) => {
             paymentInfos: []
         });
         const compradorUser = await User.create({
+            _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4d06"),
             person: compradorPerson._id,
             username: 'buyer',
             email: 'comprador@example.com',
@@ -95,6 +101,7 @@ const seedDatabase = async (keepTxData = false) => {
             roles: [compradorRole._id]
         });
     }
+
     console.log('Seeding process completed');
 };
 
@@ -103,6 +110,7 @@ const cleanDatabase = async (keepTxData) => {
     if (!keepTxData) {
         await Broker.deleteMany({});
         await Client.deleteMany({});
+        await ShrimpFarm.deleteMany({});
         await PaymentInfo.deleteMany({});
         await Person.deleteMany({});
         await User.deleteMany({});
@@ -117,80 +125,6 @@ const cleanDatabase = async (keepTxData) => {
     await Company.deleteMany({});
     console.log('Cleaning completed');
 };
-
-const seedOptions = async () => {
-    try {
-        // Principal 
-        const optionPrincipal = await Option.create({
-            name: 'Principal',
-            route: '/home',
-            icon: 'element-11',
-        });
-
-        const optionPerfilPersonal = await Option.create({
-            name: 'Perfil Personal',
-            icon: 'profile-circle',
-        });
-
-        // Perfil Personal
-        const optionMiPerfil = await Option.create({
-            name: 'Mi Perfil',
-            route: '/personal-profile/my-profile',
-            parentOption: optionPerfilPersonal,
-        });
-
-        const optionUsers = await Option.create({
-            name: 'Usuarios',
-            route: '/personal-profile/users',
-            parentOption: optionPerfilPersonal,
-        });
-
-        const optionBroker = await Option.create({
-            name: 'Brokers',
-            route: '/personal-profile/brokers',
-            parentOption: optionPerfilPersonal,
-        });
-
-        // Clientes 
-        const optionClientes = await Option.create({
-            name: 'Clientes',
-            route: '/clients',
-            icon: 'people',
-        });
-
-        // Precios 
-        const optionPrecios = await Option.create({
-            name: 'Precios',
-            route: '/prices',
-            icon: 'price-tag',
-        });
-
-        // Compras 
-        const optionCompras = await Option.create({
-            name: 'Compras',
-            route: '/purchases',
-            icon: 'receipt-square',
-        });
-
-        // Compras 
-        const optionLogistica = await Option.create({
-            name: 'Logística',
-            route: '/logistics',
-            icon: 'parcel-tracking',
-        });
-
-        // Compras 
-        const optionVentas = await Option.create({
-            name: 'Ventas',
-            route: '/sales',
-            icon: 'tag',
-        });
-
-
-    } catch (error) {
-        throw new Error('Error seeding options: ' + error.message);
-    }
-}
 
 const seedRoles = async () => {
     try {
@@ -230,228 +164,170 @@ const seedRoles = async () => {
     }
 };
 
+const seedOptions = async () => {
+    try {
+        const options = [
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f01"), name: 'Principal', route: '/home', icon: 'element-11' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f02"), name: 'Perfil Personal', icon: 'profile-circle' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f03"), name: 'Mi Perfil', route: '/personal-profile/my-profile', parentName: 'Perfil Personal' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f04"), name: 'Usuarios', route: '/personal-profile/users', parentName: 'Perfil Personal' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f05"), name: 'Brokers', route: '/personal-profile/brokers', parentName: 'Perfil Personal' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f06"), name: 'Clientes', route: '/clients', icon: 'people' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f07"), name: 'Precios', route: '/prices', icon: 'price-tag' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f08"), name: 'Compras', route: '/purchases', icon: 'receipt-square' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f09"), name: 'Logística', route: '/logistics', icon: 'parcel-tracking' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f10"), name: 'Ventas', icon: 'tag' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f11"), name: 'Compania', route: '/sales/company', parentName: 'Ventas' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f12"), name: 'Local', route: '/sales/local', parentName: 'Ventas' },
+        ];
+
+        // Fetch existing options in one query
+        const existingOptions = await Option.find({ _id: { $in: options.map(opt => opt._id) } });
+        const existingIds = new Set(existingOptions.map(opt => opt._id.toString()));
+
+        await Promise.all(
+            options.map(async (opt) => {
+                if (!existingIds.has(opt._id.toString())) {
+                    // Find parent option if applicable
+                    if (opt.parentName) {
+                        const parent = await Option.findOne({ name: opt.parentName });
+                        opt.parentOption = parent ? parent._id : null;
+                        delete opt.parentName;
+                    }
+
+                    await Option.create(opt);
+                    console.log(`✅ Inserted option: ${opt.name}`);
+                } else {
+                    console.log(`⚠️ Option already exists: ${opt.name}, skipping...`);
+                }
+            })
+        );
+
+        console.log('✅ Options seeding complete.');
+    } catch (error) {
+        console.error('❌ Error seeding options:', error.message);
+    }
+};
+
 const seedPermissions = async () => {
     try {
         const roles = await Role.find();
+        const options = await Option.find(); // Get all options at once
 
-        // Opción: Principal
-        const optionPrincipal = await Option.findOne({ name: 'Principal' });
-        roles.forEach(async (role) => {
-            await RolePermission.create({
-                role,
-                option: optionPrincipal,
-                actions: [Permission.VIEW],
-            });
-        });
+        const rolePermissions = [];
 
-        // Opción: Perfil Personal
-        const optionPerfilPersonal = await Option.findOne({ name: 'Perfil Personal' });
-        roles.forEach(async (role) => {
-            await RolePermission.create({
-                role,
-                option: optionPerfilPersonal,
-                actions: [Permission.VIEW],
-            });
+        for (const role of roles) {
+            for (const option of options) {
+                let actions = [];
 
-            const optionMiPerfil = await Option.findOne({ name: 'Mi Perfil' });
-            await RolePermission.create({
-                role,
-                option: optionMiPerfil,
-                actions: [Permission.VIEW, Permission.EDIT],
-            });
+                switch (option.name) {
+                    case 'Principal':
+                    case 'Perfil Personal':
+                        actions = [Permission.VIEW];
+                        break;
 
-            const optionBrokers = await Option.findOne({ name: 'Brokers' });
-            switch (role.name) {
-                case 'Admin':
-                    await RolePermission.create({
-                        role,
-                        option: optionBrokers,
-                        actions: [Permission.VIEW, Permission.ADD, Permission.EDIT],
+                    case 'Mi Perfil':
+                        actions = [Permission.VIEW, Permission.EDIT];
+                        break;
+
+                    case 'Usuarios':
+                        if (role.name === 'Admin') {
+                            actions = [Permission.VIEW, Permission.ADD, Permission.EDIT, Permission.DELETE];
+                        } else if (role.name === 'Secretaria') {
+                            actions = [Permission.VIEW, Permission.ADD, Permission.EDIT];
+                        } else if (role.name === 'Comprador') {
+                            actions = [];
+                        }
+                        break;
+
+                    case 'Brokers':
+                        if (role.name === 'Admin') {
+                            actions = [Permission.VIEW, Permission.ADD, Permission.EDIT, Permission.DELETE];
+                        } else if (role.name === 'Secretaria') {
+                            actions = [Permission.VIEW, Permission.ADD, Permission.EDIT];
+                        } else if (role.name === 'Comprador') {
+                            actions = [Permission.VIEW, Permission.ADD];
+                        }
+                        break;
+
+                    case 'Clientes':
+                        if (role.name === 'Admin' || role.name === 'Secretaria') {
+                            actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
+                        } else if (role.name === 'Comprador') {
+                            actions = [Permission.VIEW, Permission.ADD];
+                        }
+                        break;
+
+                    case 'Precios':
+                        if (role.name === 'Admin' || role.name === 'Secretaria') {
+                            actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
+                        } else if (role.name === 'Comprador') {
+                            actions = [Permission.VIEW];
+                        }
+                        break;
+
+                    case 'Compras':
+                        if (role.name === 'Admin' || role.name === 'Secretaria') {
+                            actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
+                        } else if (role.name === 'Comprador') {
+                            actions = [Permission.VIEW, Permission.ADD];
+                        }
+                        break;
+
+                    case 'Logística':
+                        actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
+                        break;
+
+                    case 'Ventas':
+                        if (role.name === 'Admin' || role.name === 'Secretaria') {
+                            actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
+                        } else if (role.name === 'Comprador') {
+                            actions = [Permission.VIEW, Permission.ADD];
+                        }
+                        break;
+
+                    case 'Compania':
+                        if (role.name === 'Admin' || role.name === 'Secretaria') {
+                            actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
+                        } else if (role.name === 'Comprador') {
+                            actions = [];
+                        }
+                        break;
+
+                    case 'Local':
+                        actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
+                        break;
+                }
+
+                if (actions.length > 0) {
+                    // Check if permission already exists
+                    const existingPermission = await RolePermission.findOne({
+                        role: role._id,
+                        option: option._id
                     });
-                    break;
-                case 'Secretaria':
-                    await RolePermission.create({
-                        role,
-                        option: optionBrokers,
-                        actions: [Permission.VIEW, , Permission.ADD, Permission.EDIT],
-                    });
-                    break;
-                case 'Comprador':
-                    await RolePermission.create({
-                        role,
-                        option: optionBrokers,
-                        actions: [Permission.VIEW, Permission.ADD],
-                    });
-                    break;
+
+                    if (!existingPermission) {
+                        rolePermissions.push({
+                            role: role._id,
+                            option: option._id,
+                            actions
+                        });
+                        console.log(`✅ Permission assigned: ${role.name} -> ${option.name}`);
+                    } else {
+                        console.log(`⚠️ Permission already exists: ${role.name} -> ${option.name}, skipping...`);
+                    }
+                }
             }
+        }
 
-            const optionUsers = await Option.findOne({ name: 'Usuarios' });
-            switch (role.name) {
-                case 'Admin':
-                    await RolePermission.create({
-                        role,
-                        option: optionUsers,
-                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD, Permission.DELETE],
-                    });
-                    break;
-                case 'Secretaria':
-                    await RolePermission.create({
-                        role,
-                        option: optionUsers,
-                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
-                    });
-                    break;
-                // case 'Comprador':
-                //     await RolePermission.create({
-                //         role,
-                //         option: optionUsers,
-                //         actions: [],
-                //     });
-                //     break;
-            }
-        });
+        // Bulk insert all new permissions
+        if (rolePermissions.length > 0) {
+            await RolePermission.insertMany(rolePermissions);
+        }
 
-        // Opción: Clientes
-        const optionClientes = await Option.findOne({ name: 'Clientes' });
-        roles.forEach(async (role) => {
-            switch (role.name) {
-                case 'Admin':
-                    await RolePermission.create({
-                        role,
-                        option: optionClientes,
-                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
-                    });
-                    break;
-                case 'Secretaria':
-                    await RolePermission.create({
-                        role,
-                        option: optionClientes,
-                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
-                    });
-                    break;
-                case 'Comprador':
-                    await RolePermission.create({
-                        role,
-                        option: optionClientes,
-                        actions: [Permission.VIEW, Permission.ADD],
-                    });
-                    break;
-            }
-        });
-
-        // Opción: Precios
-        const optionPrecios = await Option.findOne({ name: 'Precios' });
-        roles.forEach(async (role) => {
-            switch (role.name) {
-                case 'Admin':
-                    await RolePermission.create({
-                        role,
-                        option: optionPrecios,
-                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
-                    });
-                    break;
-                case 'Secretaria':
-                    await RolePermission.create({
-                        role,
-                        option: optionPrecios,
-                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
-                    });
-                    break;
-                case 'Comprador':
-                    await RolePermission.create({
-                        role,
-                        option: optionPrecios,
-                        actions: [Permission.VIEW],
-                    });
-                    break;
-            }
-        });
-
-        // Opción: Compras
-        const optionCompras = await Option.findOne({ name: 'Compras' });
-        roles.forEach(async (role) => {
-            switch (role.name) {
-                case 'Admin':
-                    await RolePermission.create({
-                        role,
-                        option: optionCompras,
-                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
-                    });
-                    break;
-                case 'Secretaria':
-                    await RolePermission.create({
-                        role,
-                        option: optionCompras,
-                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
-                    });
-                    break;
-                case 'Comprador':
-                    await RolePermission.create({
-                        role,
-                        option: optionCompras,
-                        actions: [Permission.VIEW, Permission.ADD],
-                    });
-                    break;
-            }
-        });
-
-        // Opción: Logística
-        const optionLogistica = await Option.findOne({ name: 'Logística' });
-        roles.forEach(async (role) => {
-            switch (role.name) {
-                case 'Admin':
-                    await RolePermission.create({
-                        role,
-                        option: optionLogistica,
-                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
-                    });
-                    break;
-                case 'Secretaria':
-                    await RolePermission.create({
-                        role,
-                        option: optionLogistica,
-                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
-                    });
-                    break;
-                case 'Comprador':
-                    await RolePermission.create({
-                        role,
-                        option: optionLogistica,
-                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
-                    });
-                    break;
-            }
-        });
-
-        // Opción: Ventas
-        const optionVentas = await Option.findOne({ name: 'Ventas' });
-        roles.forEach(async (role) => {
-            switch (role.name) {
-                case 'Admin':
-                    await RolePermission.create({
-                        role,
-                        option: optionVentas,
-                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
-                    });
-                    break;
-                case 'Secretaria':
-                    await RolePermission.create({
-                        role,
-                        option: optionVentas,
-                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
-                    });
-                    break;
-                case 'Comprador':
-                    await RolePermission.create({
-                        role,
-                        option: optionVentas,
-                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
-                    });
-                    break;
-            }
-        });
+        console.log('✅ Permissions seeding complete.');
     } catch (error) {
-        throw new Error('Error seeding permissions: ' + error.message);
+        console.error('❌ Error seeding permissions:', error.message);
     }
 };
 
