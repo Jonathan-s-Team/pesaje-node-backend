@@ -395,7 +395,7 @@ const seedPermissions = async () => {
         });
 
         // Opción: Logística
-        const optionLogistica = await Option.findOne({ name: 'Logistica' });
+        const optionLogistica = await Option.findOne({ name: 'Logística' });
         roles.forEach(async (role) => {
             switch (role.name) {
                 case 'Admin':
