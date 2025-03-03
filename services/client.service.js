@@ -35,8 +35,6 @@ const getAllByUserId = async (userId, includeDeleted = false) => {
     }));
 };
 
-
-
 const getAll = async (includeDeleted = false) => {
     const query = includeDeleted ? {} : { deletedAt: null };
 
@@ -84,44 +82,47 @@ const update = async (id, data) => {
         throw new Error('Client not found');
     }
 
-    // Update `person` if provided
+    // 🔹 Update `person` if provided
     if (data.person) {
         await dbAdapter.personAdapter.update(client.person, data.person);
     }
 
-    // Check for `buyersItBelongs` updates
+    // 🔹 Check for `buyersItBelongs` updates
     if (data.buyersItBelongs) {
         if (!Array.isArray(data.buyersItBelongs) || data.buyersItBelongs.length === 0) {
             throw new Error('buyersItBelongs must be an array with at least one valid user');
         }
 
-        // Convert both arrays to Set for easy comparison
+        // Convert arrays to Sets for easy comparison
         const existingBuyersSet = new Set(client.buyersItBelongs.map(b => b.toString())); // Existing buyers
         const newBuyersSet = new Set(data.buyersItBelongs.map(b => b.toString())); // Incoming buyers
 
-        // Find only the new buyers that are not already in the client’s list
+        // 🔸 Find new buyers to ADD
         const buyersToAdd = [...newBuyersSet].filter(buyerId => !existingBuyersSet.has(buyerId));
 
+        // 🔸 Find buyers to REMOVE
+        const buyersToRemove = [...existingBuyersSet].filter(buyerId => !newBuyersSet.has(buyerId));
+
+        // 🔹 Validate only the new buyers before adding
         if (buyersToAdd.length > 0) {
-            // Validate only the new buyers
             const existingNewBuyers = await dbAdapter.userAdapter.getAll({ _id: { $in: buyersToAdd } });
             if (existingNewBuyers.length !== buyersToAdd.length) {
                 throw new Error('One or more new buyers in buyersItBelongs do not exist');
             }
-
-            // Append only new buyers to `buyersItBelongs`
-            data.buyersItBelongs = [...client.buyersItBelongs, ...buyersToAdd];
-        } else {
-            // No changes, keep the existing buyers list
-            delete data.buyersItBelongs;
         }
+
+        // 🔹 Update `buyersItBelongs` list
+        data.buyersItBelongs = client.buyersItBelongs
+            .filter(buyerId => !buyersToRemove.includes(buyerId.toString())) // Remove unwanted buyers
+            .concat(buyersToAdd); // Add only new buyers
     }
 
     const updateData = { ...data };
-    delete updateData.person;
+    delete updateData.person; // Avoid modifying `person` separately
 
     return await dbAdapter.clientAdapter.update(id, updateData);
 };
+
 
 
 const remove = async (id) => {
