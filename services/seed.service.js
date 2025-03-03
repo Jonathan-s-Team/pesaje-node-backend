@@ -164,6 +164,27 @@ const seedOptions = async () => {
             icon: 'price-tag',
         });
 
+        // Compras 
+        const optionCompras = await Option.create({
+            name: 'Compras',
+            route: '/purchases',
+            icon: 'receipt-square',
+        });
+
+        // Compras 
+        const optionLogistica = await Option.create({
+            name: 'Logística',
+            route: '/logistics',
+            icon: 'parcel-tracking',
+        });
+
+        // Compras 
+        const optionVentas = await Option.create({
+            name: 'Ventas',
+            route: '/sales',
+            icon: 'tag',
+        });
+
 
     } catch (error) {
         throw new Error('Error seeding options: ' + error.message);
@@ -244,14 +265,14 @@ const seedPermissions = async () => {
                     await RolePermission.create({
                         role,
                         option: optionBrokers,
-                        actions: [Permission.VIEW, Permission.EDIT, Permission.DELETE],
+                        actions: [Permission.VIEW, Permission.ADD, Permission.EDIT],
                     });
                     break;
                 case 'Secretaria':
                     await RolePermission.create({
                         role,
                         option: optionBrokers,
-                        actions: [Permission.VIEW, Permission.EDIT],
+                        actions: [Permission.VIEW, , Permission.ADD, Permission.EDIT],
                     });
                     break;
                 case 'Comprador':
@@ -279,13 +300,13 @@ const seedPermissions = async () => {
                         actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
                     });
                     break;
-                case 'Comprador':
-                    await RolePermission.create({
-                        role,
-                        option: optionUsers,
-                        actions: [],
-                    });
-                    break;
+                // case 'Comprador':
+                //     await RolePermission.create({
+                //         role,
+                //         option: optionUsers,
+                //         actions: [],
+                //     });
+                //     break;
             }
         });
 
@@ -297,7 +318,7 @@ const seedPermissions = async () => {
                     await RolePermission.create({
                         role,
                         option: optionClientes,
-                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD, Permission.DELETE],
+                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
                     });
                     break;
                 case 'Secretaria':
@@ -325,7 +346,7 @@ const seedPermissions = async () => {
                     await RolePermission.create({
                         role,
                         option: optionPrecios,
-                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD, Permission.DELETE],
+                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
                     });
                     break;
                 case 'Secretaria':
@@ -340,6 +361,90 @@ const seedPermissions = async () => {
                         role,
                         option: optionPrecios,
                         actions: [Permission.VIEW],
+                    });
+                    break;
+            }
+        });
+
+        // Opción: Compras
+        const optionCompras = await Option.findOne({ name: 'Compras' });
+        roles.forEach(async (role) => {
+            switch (role.name) {
+                case 'Admin':
+                    await RolePermission.create({
+                        role,
+                        option: optionCompras,
+                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
+                    });
+                    break;
+                case 'Secretaria':
+                    await RolePermission.create({
+                        role,
+                        option: optionCompras,
+                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
+                    });
+                    break;
+                case 'Comprador':
+                    await RolePermission.create({
+                        role,
+                        option: optionCompras,
+                        actions: [Permission.VIEW, Permission.ADD],
+                    });
+                    break;
+            }
+        });
+
+        // Opción: Logística
+        const optionLogistica = await Option.findOne({ name: 'Logistica' });
+        roles.forEach(async (role) => {
+            switch (role.name) {
+                case 'Admin':
+                    await RolePermission.create({
+                        role,
+                        option: optionLogistica,
+                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
+                    });
+                    break;
+                case 'Secretaria':
+                    await RolePermission.create({
+                        role,
+                        option: optionLogistica,
+                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
+                    });
+                    break;
+                case 'Comprador':
+                    await RolePermission.create({
+                        role,
+                        option: optionLogistica,
+                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
+                    });
+                    break;
+            }
+        });
+
+        // Opción: Ventas
+        const optionVentas = await Option.findOne({ name: 'Ventas' });
+        roles.forEach(async (role) => {
+            switch (role.name) {
+                case 'Admin':
+                    await RolePermission.create({
+                        role,
+                        option: optionVentas,
+                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
+                    });
+                    break;
+                case 'Secretaria':
+                    await RolePermission.create({
+                        role,
+                        option: optionVentas,
+                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
+                    });
+                    break;
+                case 'Comprador':
+                    await RolePermission.create({
+                        role,
+                        option: optionVentas,
+                        actions: [Permission.VIEW, Permission.EDIT, Permission.ADD],
                     });
                     break;
             }
