@@ -19,6 +19,7 @@ const seedDatabase = async (keepTxData = false) => {
 
     // Encriptar contraseña
     const salt = bcrypt.genSaltSync();
+    const password = 'ftSQPU3xjgSJU*C';
 
     if (!keepTxData) {
         // --- Step 1: Create one Person and one User for each role ---
@@ -42,7 +43,7 @@ const seedDatabase = async (keepTxData = false) => {
             person: adminPerson._id,
             username: 'admin',
             email: 'admin@example.com',
-            password: bcrypt.hashSync('asdf1234', salt),
+            password: bcrypt.hashSync(password, salt),
             roles: [adminRole._id]
         });
 
@@ -66,7 +67,7 @@ const seedDatabase = async (keepTxData = false) => {
             person: secretariaPerson._id,
             username: 'secre',
             email: 'secretaria@example.com',
-            password: bcrypt.hashSync('asdf1234', salt),
+            password: bcrypt.hashSync(password, salt),
             roles: [secretariaRole._id]
         });
 
@@ -90,7 +91,7 @@ const seedDatabase = async (keepTxData = false) => {
             person: compradorPerson._id,
             username: 'buyer',
             email: 'comprador@example.com',
-            password: bcrypt.hashSync('asdf1234', salt),
+            password: bcrypt.hashSync(password, salt),
             roles: [compradorRole._id]
         });
     }
