@@ -171,7 +171,7 @@ const seedOptions = async () => {
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f02"), name: 'Perfil Personal', icon: 'profile-circle' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f06"), name: 'Clientes', route: '/clients', icon: 'people' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f07"), name: 'Precios', route: '/prices', icon: 'price-tag' },
-            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f08"), name: 'Compras', route: '/purchases', icon: 'receipt-square' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f08"), name: 'Compras', icon: 'receipt-square' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f09"), name: 'Logística', route: '/logistics', icon: 'parcel-tracking' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f10"), name: 'Ventas', icon: 'tag' }
         ];
@@ -180,6 +180,8 @@ const seedOptions = async () => {
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f03"), name: 'Mi Perfil', route: '/personal-profile/my-profile', parentName: 'Perfil Personal' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f04"), name: 'Usuarios', route: '/personal-profile/users', parentName: 'Perfil Personal' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f05"), name: 'Brokers', route: '/personal-profile/brokers', parentName: 'Perfil Personal' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f13"), name: 'Nueva Compra', route: '/purchases/new', parentName: 'Compras' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f14"), name: 'Compras Recientes', route: '/purchases/list', parentName: 'Compras' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f11"), name: 'Compañía', route: '/sales/company', parentName: 'Ventas' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f12"), name: 'Local', route: '/sales/local', parentName: 'Ventas' },
         ];
@@ -227,7 +229,6 @@ const seedOptions = async () => {
         console.error('❌ Error seeding options:', error.message);
     }
 };
-
 
 const seedPermissions = async () => {
     try {
@@ -287,6 +288,18 @@ const seedPermissions = async () => {
                         break;
 
                     case 'Compras':
+                        actions = [Permission.VIEW];
+                        break;
+
+                    case 'Nueva Compra':
+                        if (role.name === 'Admin' || role.name === 'Secretaria') {
+                            actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
+                        } else if (role.name === 'Comprador') {
+                            actions = [Permission.VIEW, Permission.ADD];
+                        }
+                        break;
+
+                    case 'Compras Recientes':
                         if (role.name === 'Admin' || role.name === 'Secretaria') {
                             actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
                         } else if (role.name === 'Comprador') {
@@ -299,11 +312,7 @@ const seedPermissions = async () => {
                         break;
 
                     case 'Ventas':
-                        if (role.name === 'Admin' || role.name === 'Secretaria') {
-                            actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
-                        } else if (role.name === 'Comprador') {
-                            actions = [Permission.VIEW, Permission.ADD];
-                        }
+                        actions = [Permission.VIEW];
                         break;
 
                     case 'Compañía':
