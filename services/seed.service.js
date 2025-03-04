@@ -169,36 +169,55 @@ const seedOptions = async () => {
         const options = [
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f01"), name: 'Principal', route: '/home', icon: 'element-11' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f02"), name: 'Perfil Personal', icon: 'profile-circle' },
-            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f03"), name: 'Mi Perfil', route: '/personal-profile/my-profile', parentName: 'Perfil Personal' },
-            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f04"), name: 'Usuarios', route: '/personal-profile/users', parentName: 'Perfil Personal' },
-            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f05"), name: 'Brokers', route: '/personal-profile/brokers', parentName: 'Perfil Personal' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f06"), name: 'Clientes', route: '/clients', icon: 'people' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f07"), name: 'Precios', route: '/prices', icon: 'price-tag' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f08"), name: 'Compras', route: '/purchases', icon: 'receipt-square' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f09"), name: 'Logística', route: '/logistics', icon: 'parcel-tracking' },
-            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f10"), name: 'Ventas', icon: 'tag' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f10"), name: 'Ventas', icon: 'tag' }
+        ];
+
+        const childOptions = [
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f03"), name: 'Mi Perfil', route: '/personal-profile/my-profile', parentName: 'Perfil Personal' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f04"), name: 'Usuarios', route: '/personal-profile/users', parentName: 'Perfil Personal' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f05"), name: 'Brokers', route: '/personal-profile/brokers', parentName: 'Perfil Personal' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f11"), name: 'Compañía', route: '/sales/company', parentName: 'Ventas' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f12"), name: 'Local', route: '/sales/local', parentName: 'Ventas' },
         ];
 
         // Fetch existing options in one query
-        const existingOptions = await Option.find({ _id: { $in: options.map(opt => opt._id) } });
+        const existingOptions = await Option.find({ _id: { $in: [...options, ...childOptions].map(opt => opt._id) } });
         const existingIds = new Set(existingOptions.map(opt => opt._id.toString()));
 
+        // 🔹 Insert Parent Options First
         await Promise.all(
             options.map(async (opt) => {
                 if (!existingIds.has(opt._id.toString())) {
-                    // Find parent option if applicable
-                    if (opt.parentName) {
-                        const parent = await Option.findOne({ name: opt.parentName });
-                        opt.parentOption = parent ? parent._id : null;
-                        delete opt.parentName;
-                    }
+                    await Option.create(opt);
+                    console.log(`✅ Inserted parent option: ${opt.name}`);
+                } else {
+                    console.log(`⚠️ Parent option already exists: ${opt.name}, skipping...`);
+                }
+            })
+        );
+
+        // 🔹 Fetch Parent IDs After Insertions
+        const parentOptionsMap = {};
+        const insertedParents = await Option.find({ name: { $in: options.map(o => o.name) } });
+        insertedParents.forEach(opt => {
+            parentOptionsMap[opt.name] = opt._id;
+        });
+
+        // 🔹 Insert Child Options with Correct Parent References
+        await Promise.all(
+            childOptions.map(async (opt) => {
+                if (!existingIds.has(opt._id.toString())) {
+                    opt.parentOption = parentOptionsMap[opt.parentName] || null;
+                    delete opt.parentName;
 
                     await Option.create(opt);
-                    console.log(`✅ Inserted option: ${opt.name}`);
+                    console.log(`✅ Inserted child option: ${opt.name}`);
                 } else {
-                    console.log(`⚠️ Option already exists: ${opt.name}, skipping...`);
+                    console.log(`⚠️ Child option already exists: ${opt.name}, skipping...`);
                 }
             })
         );
@@ -208,6 +227,7 @@ const seedOptions = async () => {
         console.error('❌ Error seeding options:', error.message);
     }
 };
+
 
 const seedPermissions = async () => {
     try {
