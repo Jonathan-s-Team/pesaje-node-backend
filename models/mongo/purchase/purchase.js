@@ -11,6 +11,11 @@ const PurchaseSchema = Schema({
     ref: 'Company',
     required: true
   },
+  period: {
+    type: Schema.Types.ObjectId,
+    ref: 'Period',
+    required: true
+  },
   broker: {
     type: Schema.Types.ObjectId,
     ref: 'Broker',
@@ -97,7 +102,10 @@ const PurchaseSchema = Schema({
 // 🔹 Unique index for invoice per client (only when invoice is not null)
 PurchaseSchema.index(
   { client: 1, invoice: 1 },
-  { unique: true, partialFilterExpression: { invoice: { $exists: true, $ne: null } } }
+  {
+    unique: true,
+    partialFilterExpression: { invoice: { $exists: true } }
+  }
 );
 
 PurchaseSchema.method('toJSON', function () {
