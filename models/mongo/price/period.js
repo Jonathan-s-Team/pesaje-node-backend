@@ -28,4 +28,9 @@ PeriodSchema.method('toJSON', function () {
   return object;
 });
 
+// 🔹 Ensure indexes are properly synchronized during schema initialization
+PeriodSchema.on('index', (error) => {
+  if (error) console.error('❌ Indexing error:', error);
+});
+
 module.exports = model('Period', PeriodSchema);

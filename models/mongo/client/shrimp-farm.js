@@ -52,10 +52,9 @@ ShrimpFarmSchema.method('toJSON', function () {
   return object;
 });
 
-// 🔹 Ensure indexes are properly synchronized
-ShrimpFarmSchema.pre('save', async function (next) {
-  await this.constructor.syncIndexes();
-  next();
+// 🔹 Ensure indexes are properly synchronized during schema initialization
+ShrimpFarmSchema.on('index', (error) => {
+  if (error) console.error('❌ Indexing error:', error);
 });
 
 module.exports = model('ShrimpFarm', ShrimpFarmSchema);

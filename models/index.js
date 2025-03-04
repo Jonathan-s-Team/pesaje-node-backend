@@ -5,6 +5,7 @@ const accountModelsPath = `./${dbType}/account`;
 const profileModelsPath = `./${dbType}/profile`;
 const clientModelsPath = `./${dbType}/client`;
 const priceModelsPath = `./${dbType}/price`;
+const purchaseModelsPath = `./${dbType}/purchase`;
 
 // Import account models
 const User = require(`${accountModelsPath}/user`);
@@ -27,6 +28,9 @@ const Company = require(`${priceModelsPath}/company`);
 const Period = require(`${priceModelsPath}/period`);
 const SizePrice = require(`${priceModelsPath}/size-price`);
 
+// Import pruchase models
+const Purchase = require(`${purchaseModelsPath}/purchase`);
+
 console.log(`Using ${dbType.toUpperCase()} Models`);
 
 module.exports = {
@@ -43,4 +47,5 @@ module.exports = {
     Company,
     Period,
     SizePrice,
+    Purchase,
 };

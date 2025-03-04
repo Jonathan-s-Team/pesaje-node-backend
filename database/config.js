@@ -14,8 +14,10 @@ const dbConnection = async () => {
             console.log('MongoDB connected');
 
             // Ensure indexes are created (Only for MongoDB)
-            const { Period } = require('../models');
+            const { Period, ShrimpFarm, Purchase } = require('../models');
             await Period.syncIndexes();
+            await ShrimpFarm.syncIndexes();
+            await Purchase.syncIndexes();
         }
         // else if (dbType === 'sql') {
         //     // Connect to SQL Database (PostgreSQL, MySQL, etc.)
