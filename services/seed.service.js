@@ -2,7 +2,7 @@
 
 const bcrypt = require('bcryptjs');
 
-const { Option, Role, RolePermission, User, PaymentInfo, Person, Broker, Client, Size, Company, Period, SizePrice, ShrimpFarm } = require('../models');
+const { Option, Role, RolePermission, User, PaymentInfo, Person, Broker, Client, Size, Company, Period, SizePrice, ShrimpFarm, Purchase } = require('../models');
 const Permission = require('../enums/permission.enum');
 const SizeTypeEnum = require('../enums/size-type.enum');
 const { default: mongoose } = require('mongoose');
@@ -117,6 +117,8 @@ const cleanDatabase = async (keepTxData) => {
         await Period.deleteMany({});
         await SizePrice.deleteMany({});
     }
+
+    await Purchase.deleteMany({});
 
     await Size.deleteMany({});
     await Option.deleteMany({});
