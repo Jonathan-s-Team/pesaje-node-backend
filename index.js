@@ -40,6 +40,7 @@ app.use('/api/shrimp-farm', require('./routes/shrimp-farm.routes'));
 app.use('/api/period', require('./routes/period-size-price.routes'));
 app.use('/api/purchase', require('./routes/purchase.routes'));
 app.use('/api/payment-method', require('./routes/payment-method.routes'));
+app.use('/api/purchase-payment-method', require('./routes/purchase-payment-method.routes'));
 
 
 // Escuchar peticiones

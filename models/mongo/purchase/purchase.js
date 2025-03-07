@@ -1,5 +1,8 @@
 const { Schema, model } = require('mongoose');
 
+const PurchaseStatusEnum = require('../../../enums/purchase-status.enum');
+
+
 const PurchaseSchema = Schema({
   buyer: {
     type: Schema.Types.ObjectId,
@@ -89,6 +92,11 @@ const PurchaseSchema = Schema({
   invoice: {
     type: String,
     sparse: true // Allows multiple `null` values while keeping uniqueness for non-null values
+  },
+  status: {
+    type: String,
+    enum: PurchaseStatusEnum,
+    required: true,
   },
   deletedAt: {
     type: Date,

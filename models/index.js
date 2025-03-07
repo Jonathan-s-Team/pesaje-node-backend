@@ -31,6 +31,7 @@ const SizePrice = require(`${priceModelsPath}/size-price`);
 // Import pruchase models
 const Purchase = require(`${purchaseModelsPath}/purchase`);
 const PaymentMethod = require(`${purchaseModelsPath}/payment-method`);
+const PurchasePaymentMethod = require(`${purchaseModelsPath}/purchase-payment-method`);
 
 console.log(`Using ${dbType.toUpperCase()} Models`);
 
@@ -50,4 +51,5 @@ module.exports = {
     SizePrice,
     Purchase,
     PaymentMethod,
+    PurchasePaymentMethod,
 };
