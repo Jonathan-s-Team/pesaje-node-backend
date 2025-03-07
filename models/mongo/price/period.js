@@ -6,6 +6,10 @@ const PeriodSchema = Schema({
     type: String,
     required: true
   },
+  receivedDateTime: {
+    type: Date,
+    required: true
+  },
   company: {
     type: Schema.Types.ObjectId,
     ref: 'Company',

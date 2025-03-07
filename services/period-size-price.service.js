@@ -82,7 +82,7 @@ const create = async (data) => {
 
         // ✅ Create the Period only after validation
         const period = await dbAdapter.periodAdapter.create(
-            { name: data.name, company: data.company },
+            { name: data.name, receivedDateTime: data.receivedDateTime, company: data.company },
             { session }
         );
 
@@ -112,7 +112,7 @@ const create = async (data) => {
 };
 
 const update = async (periodId, data) => {
-    const { sizePrices } = data;
+    const { receivedDateTime, sizePrices } = data;
 
     // Find the period
     const period = await dbAdapter.periodAdapter.getById(periodId);
@@ -120,7 +120,12 @@ const update = async (periodId, data) => {
         throw new Error('Period not found');
     }
 
-    // Validate that sizePrices is provided
+    // Validate receivedDateTime format (if provided)
+    if (receivedDateTime && isNaN(Date.parse(receivedDateTime))) {
+        throw new Error('Invalid receivedDateTime format. Use ISO 8601 format.');
+    }
+
+    // Validate that sizePrices is provided and not empty
     if (!sizePrices || sizePrices.length === 0) {
         throw new Error('sizePrices must be provided and cannot be empty.');
     }
@@ -133,28 +138,46 @@ const update = async (periodId, data) => {
         throw new Error('One or more sizeIds provided do not exist. No updates were performed.');
     }
 
-    // Update or create sizePrices
-    for (let sp of sizePrices) {
-        const existingSizePrice = await dbAdapter.sizePriceAdapter.getAll({
-            size: sp.sizeId,
-            period: period.id
-        });
+    // Start transaction using the dbAdapter method
+    const transaction = await dbAdapter.periodAdapter.startTransaction();
 
-        if (existingSizePrice.length > 0) {
-            // Update existing sizePrice
-            await dbAdapter.sizePriceAdapter.update(existingSizePrice[0].id, { price: sp.price });
-        } else {
-            // Create new sizePrice if it doesn't exist
-            await dbAdapter.sizePriceAdapter.create({
+    try {
+        if (receivedDateTime) {
+            await dbAdapter.periodAdapter.update(periodId, { receivedDateTime }, { session: transaction.session });
+        }
+
+        for (let sp of sizePrices) {
+            const existingSizePrice = await dbAdapter.sizePriceAdapter.getAll({
                 size: sp.sizeId,
-                price: sp.price,
                 period: period.id
             });
-        }
-    }
 
-    return { ...period, sizePrices };
+            if (existingSizePrice.length > 0) {
+                // Update existing sizePrice
+                await dbAdapter.sizePriceAdapter.update(existingSizePrice[0].id, { price: sp.price }, { session: transaction.session });
+            } else {
+                // Create new sizePrice if it doesn't exist
+                await dbAdapter.sizePriceAdapter.create({
+                    size: sp.sizeId,
+                    price: sp.price,
+                    period: period.id
+                }, { session: transaction.session });
+            }
+        }
+
+        // Commit transaction if everything succeeds
+        await transaction.commit();
+        transaction.end();
+
+        return { ...period, receivedDateTime, sizePrices };
+    } catch (error) {
+        await transaction.rollback();
+        await transaction.end();
+        throw new Error(`Update failed: ${error.message}`);
+    }
 };
+
+
 
 
 const remove = async (id) => {

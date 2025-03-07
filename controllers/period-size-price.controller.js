@@ -42,10 +42,9 @@ const createPeriod = async (req, res = response) => {
 const updatePeriod = async (req, res = response) => {
     try {
         const { id } = req.params;
-        const { sizePrices } = req.body;
 
         // Ensure only `sizePrices` is updated
-        const updatedPeriod = await update(id, { sizePrices });
+        const updatedPeriod = await update(id, req.body);
 
         res.json({ ok: true, message: 'Period sizePrices updated successfully', data: updatedPeriod });
     } catch (error) {

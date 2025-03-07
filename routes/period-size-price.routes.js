@@ -40,12 +40,19 @@ router.post(
     [
         validateJWT,
         check('name', 'Name is required').notEmpty(),
+        check('receivedDateTime')
+            .notEmpty()
+            .withMessage('Received Date is required')
+            .isISO8601()
+            .toDate()
+            .withMessage('receivedDateTime must be a valid ISO 8601 date string'),
         check('company', 'Company ID must be a valid MongoDB ObjectId').isMongoId(),
         check('sizePrices').optional().isArray(),
         validateFields
     ],
     createPeriod
 );
+
 
 // 🔹 Update period (only sizePrices)
 router.put(
@@ -55,6 +62,11 @@ router.put(
         check('id', 'Invalid period ID').isMongoId(),
         body('name').not().exists().withMessage('Name cannot be updated'),
         body('company').not().exists().withMessage('Company cannot be updated'),
+        body('receivedDateTime')
+            .optional()
+            .isISO8601()
+            .toDate()
+            .withMessage('receivedDateTime must be a valid ISO 8601 date string'),
         body('sizePrices')
             .isArray({ min: 1 })
             .withMessage('sizePrices must be an array with at least one entry'),
@@ -68,6 +80,7 @@ router.put(
     ],
     updatePeriod
 );
+
 
 
 // 🔹 Soft delete a period
