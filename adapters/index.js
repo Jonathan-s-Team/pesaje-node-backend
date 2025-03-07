@@ -1,4 +1,4 @@
-const { User, Role, Broker, PaymentInfo, Person, RolePermission, Option, Client, ShrimpFarm, Period, SizePrice, Company, Size, Purchase } = require('../models');
+const { User, Role, Broker, PaymentInfo, Person, RolePermission, Option, Client, ShrimpFarm, Period, SizePrice, Company, Size, Purchase, PaymentMethod } = require('../models');
 const MongooseGenericAdapter = require('./mongoose-generic-adapter');
 
 // If you have another adapter (e.g., PostgreSQL):
@@ -7,7 +7,7 @@ const MongooseGenericAdapter = require('./mongoose-generic-adapter');
 // Dynamically select the database
 const dbType = process.env.DB_TYPE || 'mongo';
 
-let userAdapter, personAdapter, brokerAdapter, paymentInfoAdapter, roleAdapter, companyAdapter, sizeAdapter, rolePermissionAdapter, optionAdapter, clientAdapter, shrimpFarmAdapter, periodAdapter, sizePriceAdapter, purchaseAdapter;
+let userAdapter, personAdapter, brokerAdapter, paymentInfoAdapter, roleAdapter, companyAdapter, sizeAdapter, rolePermissionAdapter, optionAdapter, clientAdapter, shrimpFarmAdapter, periodAdapter, sizePriceAdapter, purchaseAdapter, paymentMethodAdapter;
 
 if (dbType === 'mongo') {
     userAdapter = new MongooseGenericAdapter(User, ['person', 'roles']); // Populate person & roles
@@ -24,6 +24,7 @@ if (dbType === 'mongo') {
     periodAdapter = new MongooseGenericAdapter(Period, ['company']);
     sizePriceAdapter = new MongooseGenericAdapter(SizePrice);
     purchaseAdapter = new MongooseGenericAdapter(Purchase);
+    paymentMethodAdapter = new MongooseGenericAdapter(PaymentMethod);
 }
 // else if (dbType === 'postgres') {
 //     userAdapter = new PostgresGenericAdapter('User'); // Example usage for Sequelize
@@ -32,4 +33,4 @@ if (dbType === 'mongo') {
 //     throw new Error(`Unsupported DB_TYPE: ${dbType}`);
 // }
 
-module.exports = { userAdapter, personAdapter, brokerAdapter, paymentInfoAdapter, roleAdapter, companyAdapter, sizeAdapter, rolePermissionAdapter, optionAdapter, clientAdapter, shrimpFarmAdapter, periodAdapter, sizePriceAdapter, purchaseAdapter };
+module.exports = { userAdapter, personAdapter, brokerAdapter, paymentInfoAdapter, roleAdapter, companyAdapter, sizeAdapter, rolePermissionAdapter, optionAdapter, clientAdapter, shrimpFarmAdapter, periodAdapter, sizePriceAdapter, purchaseAdapter, paymentMethodAdapter };

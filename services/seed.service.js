@@ -2,7 +2,7 @@
 
 const bcrypt = require('bcryptjs');
 
-const { Option, Role, RolePermission, User, PaymentInfo, Person, Broker, Client, Size, Company, Period, SizePrice, ShrimpFarm, Purchase } = require('../models');
+const { Option, Role, RolePermission, User, PaymentInfo, Person, Broker, Client, Size, Company, Period, SizePrice, ShrimpFarm, Purchase, PaymentMethod } = require('../models');
 const Permission = require('../enums/permission.enum');
 const SizeTypeEnum = require('../enums/size-type.enum');
 const { default: mongoose } = require('mongoose');
@@ -16,6 +16,7 @@ const seedDatabase = async (keepTxData = false) => {
     await seedPermissions();
     await seedCompanies();
     await seedSizes();
+    await seedPaymentMethods();
 
     // Encriptar contraseña
     const salt = bcrypt.genSaltSync();
@@ -125,6 +126,7 @@ const cleanDatabase = async (keepTxData) => {
     await Role.deleteMany({});
     await RolePermission.deleteMany({});
     await Company.deleteMany({});
+    await PaymentMethod.deleteMany({});
     console.log('Cleaning completed');
 };
 
@@ -458,6 +460,34 @@ const seedSizes = async () => {
         console.log("✅ Sizes seeding complete.");
     } catch (error) {
         console.error("❌ Error seeding sizes:", error.message);
+    }
+};
+
+const seedPaymentMethods = async () => {
+    try {
+        // Define fixed IDs for catalog payment methods
+        const fixedPaymentMethods = [
+            { _id: new mongoose.Types.ObjectId("60f9b7b2c8b3f10ffc2e5a01"), name: "Efectivo" },
+            { _id: new mongoose.Types.ObjectId("60f9b7b2c8b3f10ffc2e5a02"), name: "Transferencia" },
+            { _id: new mongoose.Types.ObjectId("60f9b7b2c8b3f10ffc2e5a03"), name: "Cheque" },
+        ];
+
+        // Insert payment methods only if they do not exist
+        await Promise.all(
+            fixedPaymentMethods.map(async (pm) => {
+                const existingPaymentMethod = await PaymentMethod.findById(pm._id);
+                if (!existingPaymentMethod) {
+                    await PaymentMethod.create(pm);
+                    console.log(`✅ Inserted payment method: ${pm.name}`);
+                } else {
+                    console.log(`⚠️ Payment Method already exists: ${pm.name}, skipping...`);
+                }
+            })
+        );
+
+        console.log('✅ Payment Methods seeding complete.');
+    } catch (error) {
+        console.error('❌ Error seeding companies:', error.message);
     }
 };
 
