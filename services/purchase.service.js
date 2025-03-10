@@ -9,17 +9,46 @@ const getAll = async ({ includeDeleted = false, clientId, userId, periodId }) =>
     if (periodId) query.period = periodId;
 
     // Fetch purchases with relations
-    return await dbAdapter.purchaseAdapter.getAllWithRelations(query, [
+    const purchases = await dbAdapter.purchaseAdapter.getAllWithRelations(query, [
         'buyer',
         'company',
         'broker',
         'client',
     ]);
+
+    // Remove `buyer.password` from response
+    return purchases.map((purchase) => {
+        if (purchase.buyer) {
+            purchase.buyer = {
+                ...purchase.buyer,
+                password: undefined, // Remove password field
+            };
+        }
+        return purchase;
+    });
 };
 
 const getById = async (id) => {
-    return await dbAdapter.purchaseAdapter.getByIdWithRelations(id, ['buyer', 'company', 'broker', 'client', 'shrimpFarm', 'period']);
+    const purchase = await dbAdapter.purchaseAdapter.getByIdWithRelations(id, [
+        'buyer',
+        'company',
+        'broker',
+        'client',
+        'shrimpFarm',
+        'period',
+    ]);
+
+    // Remove `buyer.password` if it exists
+    if (purchase && purchase.buyer) {
+        purchase.buyer = {
+            ...purchase.buyer,
+            password: undefined, // Remove password field
+        };
+    }
+
+    return purchase;
 };
+
 
 const create = async (data) => {
     // Define the references and their corresponding adapters
