@@ -14,11 +14,6 @@ const PurchaseSchema = Schema({
     ref: 'Company',
     required: true
   },
-  period: {
-    type: Schema.Types.ObjectId,
-    ref: 'Period',
-    required: true
-  },
   broker: {
     type: Schema.Types.ObjectId,
     ref: 'Broker',
@@ -33,6 +28,10 @@ const PurchaseSchema = Schema({
     type: Schema.Types.ObjectId,
     ref: 'ShrimpFarm',
     required: true
+  },
+  purchaseDate: {
+    type: Date,
+    required: true,
   },
   averageGrams: {
     type: Number,

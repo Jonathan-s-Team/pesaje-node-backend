@@ -1,4 +1,5 @@
 const dbAdapter = require('../adapters');
+const PurchaseStatusEnum = require('../enums/purchase-status.enum');
 
 const getAll = async ({ includeDeleted = false, clientId, userId, periodId }) => {
     // Define query conditions
@@ -35,7 +36,6 @@ const getById = async (id) => {
         'broker',
         'client',
         'shrimpFarm',
-        'period',
     ]);
 
     // Remove `buyer.password` if it exists
@@ -55,7 +55,6 @@ const create = async (data) => {
     const references = {
         buyer: 'userAdapter',
         company: 'companyAdapter',
-        period: 'periodAdapter',
         broker: 'brokerAdapter',
         client: 'clientAdapter',
         shrimpFarm: 'shrimpFarmAdapter'
@@ -69,6 +68,9 @@ const create = async (data) => {
         }
     }));
 
+    // Set initial status
+    data.status = PurchaseStatusEnum.DRAFT;
+    
     // Create the purchase record
     return await dbAdapter.purchaseAdapter.create(data);
 };

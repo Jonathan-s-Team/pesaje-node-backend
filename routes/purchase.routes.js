@@ -44,7 +44,6 @@ router.post(
         validateJWT,
         check('buyer', 'Buyer ID is required').isMongoId(),
         check('company', 'Company ID is required').isMongoId(),
-        check('period', 'Period ID is required').isMongoId(),
         check('broker', 'Broker ID is required').isMongoId(),
         check('client', 'Client ID is required').isMongoId(),
         check('shrimpFarm', 'Shrimp Farm ID is required').isMongoId(),
