@@ -1,10 +1,21 @@
 const { Schema, model } = require('mongoose');
 
+const TimeOfDayEnum = require('../../../enums/time-of-day.enum');
+
 const PeriodSchema = Schema({
 
   name: {
     type: String,
     required: true
+  },
+  fromDate: {
+    type: Date,
+    required: true,
+  },
+  timeOfDay: {
+    type: String,
+    enum: TimeOfDayEnum,
+    required: true,
   },
   receivedDateTime: {
     type: Date,
