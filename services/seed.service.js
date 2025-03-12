@@ -179,17 +179,20 @@ const seedOptions = async () => {
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f07"), name: 'Precios', route: '/prices', icon: 'price-tag' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f08"), name: 'Compras', icon: 'receipt-square' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f09"), name: 'Logística', route: '/logistics', icon: 'parcel-tracking' },
-            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f10"), name: 'Ventas', icon: 'tag' }
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f10"), name: 'Ventas', icon: 'tag' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f15"), name: 'Reportes', icon: 'file-sheet' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f16"), name: 'Administración', icon: 'gear' }
         ];
 
         const childOptions = [
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f03"), name: 'Mi Perfil', route: '/personal-profile/my-profile', parentName: 'Perfil Personal' },
-            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f04"), name: 'Usuarios', route: '/personal-profile/users', parentName: 'Perfil Personal' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f05"), name: 'Brokers', route: '/personal-profile/brokers', parentName: 'Perfil Personal' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f13"), name: 'Nueva Compra', route: '/purchases/new', parentName: 'Compras' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f14"), name: 'Compras Recientes', route: '/purchases/list', parentName: 'Compras' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f11"), name: 'Compañía', route: '/sales/company', parentName: 'Ventas' },
-            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f12"), name: 'Local', route: '/sales/local', parentName: 'Ventas' },
+            // { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f12"), name: 'Local', route: '/sales/local', parentName: 'Ventas' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f04"), name: 'Gestionar Usuarios', route: '/settings/users', parentName: 'Administración' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f17"), name: 'Gestionar Clientes', route: '/settings/clients', parentName: 'Administración' },
         ];
 
         // Fetch existing options in one query
@@ -257,16 +260,6 @@ const seedPermissions = async () => {
                         actions = [Permission.VIEW, Permission.EDIT];
                         break;
 
-                    case 'Usuarios':
-                        if (role.name === 'Admin') {
-                            actions = [Permission.VIEW, Permission.ADD, Permission.EDIT, Permission.DELETE];
-                        } else if (role.name === 'Secretaria') {
-                            actions = [Permission.VIEW, Permission.ADD, Permission.EDIT];
-                        } else if (role.name === 'Comprador') {
-                            actions = [];
-                        }
-                        break;
-
                     case 'Brokers':
                         if (role.name === 'Admin') {
                             actions = [Permission.VIEW, Permission.ADD, Permission.EDIT, Permission.DELETE];
@@ -279,7 +272,7 @@ const seedPermissions = async () => {
 
                     case 'Clientes':
                         if (role.name === 'Admin' || role.name === 'Secretaria') {
-                            actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
+                            actions = [];
                         } else if (role.name === 'Comprador') {
                             actions = [Permission.VIEW, Permission.ADD];
                         }
@@ -329,8 +322,38 @@ const seedPermissions = async () => {
                         }
                         break;
 
-                    case 'Local':
-                        actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
+                    // case 'Local':
+                    //     actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
+                    //     break;
+
+                    case 'Reportes':
+                        actions = [Permission.VIEW];
+                        break;
+
+                    case 'Administración':
+                        if (role.name === 'Admin' || role.name === 'Secretaria') {
+                            actions = [Permission.VIEW];
+                        } else if (role.name === 'Comprador') {
+                            actions = [];
+                        }
+                        break;
+
+                    case 'Gestionar Usuarios':
+                        if (role.name === 'Admin') {
+                            actions = [Permission.VIEW, Permission.ADD, Permission.EDIT, Permission.DELETE];
+                        } else if (role.name === 'Secretaria') {
+                            actions = [Permission.VIEW, Permission.ADD, Permission.EDIT];
+                        } else if (role.name === 'Comprador') {
+                            actions = [];
+                        }
+                        break;
+
+                    case 'Gestionar Clientes':
+                        if (role.name === 'Admin' || role.name === 'Secretaria') {
+                            actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
+                        } else if (role.name === 'Comprador') {
+                            actions = [];
+                        }
                         break;
                 }
 
