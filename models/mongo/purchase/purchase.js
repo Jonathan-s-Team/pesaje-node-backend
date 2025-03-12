@@ -2,7 +2,6 @@ const { Schema, model } = require('mongoose');
 
 const PurchaseStatusEnum = require('../../../enums/purchase-status.enum');
 
-
 const PurchaseSchema = Schema({
   buyer: {
     type: Schema.Types.ObjectId,
@@ -28,6 +27,10 @@ const PurchaseSchema = Schema({
     type: Schema.Types.ObjectId,
     ref: 'ShrimpFarm',
     required: true
+  },
+  controlNumber: { // Auto-incremented
+    type: Number,
+    unique: true
   },
   purchaseDate: {
     type: Date,
@@ -114,6 +117,26 @@ PurchaseSchema.index(
     partialFilterExpression: { invoice: { $exists: true } }
   }
 );
+
+// 🔹 Auto-increment `controlNumber`
+PurchaseSchema.pre('save', async function (next) {
+  if (!this.controlNumber) {
+    try {
+      const Counter = require('../control/counter'); // ✅ Lazy import to avoid circular dependency
+      const counter = await Counter.findOneAndUpdate(
+        { model: 'Purchase' },
+        { $inc: { seq: 1 } },
+        { new: true, upsert: true }
+      );
+      if (counter) {
+        this.controlNumber = counter.seq;
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+  next();
+});
 
 PurchaseSchema.method('toJSON', function () {
   const { __v, _id, createdAt, updatedAt, ...object } = this.toObject();
