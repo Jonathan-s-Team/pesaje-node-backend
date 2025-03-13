@@ -1,11 +1,15 @@
 const dbType = process.env.DB_TYPE || 'mongo';
 
 // Load models dynamically based on DB_TYPE
+const controlModelsPath = `./${dbType}/control`;
 const accountModelsPath = `./${dbType}/account`;
 const profileModelsPath = `./${dbType}/profile`;
 const clientModelsPath = `./${dbType}/client`;
 const priceModelsPath = `./${dbType}/price`;
 const purchaseModelsPath = `./${dbType}/purchase`;
+
+// Import control models
+const Counter = require(`${controlModelsPath}/counter`);
 
 // Import account models
 const User = require(`${accountModelsPath}/user`);
@@ -36,6 +40,7 @@ const PurchasePaymentMethod = require(`${purchaseModelsPath}/purchase-payment-me
 console.log(`Using ${dbType.toUpperCase()} Models`);
 
 module.exports = {
+    Counter,
     User,
     Role,
     Option,
