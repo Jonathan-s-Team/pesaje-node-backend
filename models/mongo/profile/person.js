@@ -18,7 +18,6 @@ const PersonSchema = new Schema({
     },
     birthDate: {
         type: Date,
-        required: true
     },
     address: {
         type: String,
@@ -36,15 +35,12 @@ const PersonSchema = new Schema({
     },
     email: {
         type: String,
-        required: true
     },
     emergencyContactName: {
         type: String,
-        required: true
     },
     emergencyContactPhone: {
         type: String,
-        required: true
     },
 },
     { timestamps: true },
