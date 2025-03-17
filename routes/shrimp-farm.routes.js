@@ -10,6 +10,7 @@ const {
     updateShrimpFarm,
     removeShrimpFarm
 } = require('../controllers/shrimp-farm.controller');
+const TransportationMethodEnum = require('../enums/transportation-method.enum');
 
 const router = express.Router();
 
@@ -60,19 +61,80 @@ router.post(
     [
         validateJWT,
         check('identifier', 'Identifier is required').notEmpty(),
-        check('numberHectares', 'Number of hectares is required').isNumeric(),
+        check('numberHectares')
+            .isNumeric()
+            .withMessage('Number of hectares must be a numeric value')
+            .isFloat({ min: 0 })
+            .withMessage('Number of hectares must be at least 0'),
         check('place', 'Place is required').notEmpty(),
-        check('transportationMethod', 'Invalid transportation method').isIn(Object.values(require('../enums/transportation-method.enum'))),
-        check('distanceToGate', 'Distance to gate is required').isNumeric(),
-        check('timeFromPedernales', 'Time from Pedernales is required').isNumeric(),
+        check('transportationMethod')
+            .notEmpty()
+            .withMessage('Transportation method is required')
+            .isIn(Object.values(TransportationMethodEnum))
+            .withMessage(`transportationMethod must be one of: ${Object.values(TransportationMethodEnum).join(', ')}`),
+        check('distanceToGate')
+            .isNumeric()
+            .withMessage('Distance to gate must be a numeric value')
+            .isFloat({ min: 0 })
+            .withMessage('Distance to gate must be at least 0'),
+        check('timeFromPedernales')
+            .isNumeric()
+            .withMessage('Time from Pedernales must be a numeric value')
+            .isFloat({ min: 0 })
+            .withMessage('Time from Pedernales must be at least 0'),
         check('client', 'Client ID must be a valid MongoDB ObjectId').isMongoId(),
+        check('buyerItBelongs', 'Buyer ID must be a valid MongoDB ObjectId').isMongoId(),
         validateFields
     ],
     createShrimpFarm
 );
 
 // 🔹 Update a shrimp farm
-router.put('/:id', validateJWT, validateFields, updateShrimpFarm);
+router.put(
+    '/:id',
+    [
+        validateJWT,
+        check('id', 'Invalid shrimp farm ID').isMongoId(),
+        check('identifier')
+            .optional()
+            .notEmpty()
+            .withMessage('Identifier cannot be empty'),
+        check('numberHectares')
+            .optional()
+            .isNumeric()
+            .withMessage('Number of hectares must be a numeric value')
+            .isFloat({ min: 0 })
+            .withMessage('Number of hectares must be at least 0'),
+        check('place')
+            .optional()
+            .notEmpty()
+            .withMessage('Place cannot be empty'),
+        check('transportationMethod')
+            .optional()
+            .notEmpty()
+            .withMessage('Transportation method cannot be empty')
+            .isIn(Object.values(TransportationMethodEnum))
+            .withMessage(`Transportation method must be one of: ${Object.values(TransportationMethodEnum).join(', ')}`),
+        check('distanceToGate')
+            .optional()
+            .isNumeric()
+            .withMessage('Distance to gate must be a numeric value')
+            .isFloat({ min: 0 })
+            .withMessage('Distance to gate must be at least 0'),
+        check('timeFromPedernales')
+            .optional()
+            .isNumeric()
+            .withMessage('Time from Pedernales must be a numeric value')
+            .isFloat({ min: 0 })
+            .withMessage('Time from Pedernales must be at least 0'),
+        check('buyerItBelongs')
+            .optional()
+            .isMongoId()
+            .withMessage('Buyer ID must be a valid MongoDB ObjectId'),
+        validateFields,
+    ],
+    updateShrimpFarm
+);
 
 // 🔹 Soft delete a shrimp farm
 router.delete('/:id', validateJWT, removeShrimpFarm);

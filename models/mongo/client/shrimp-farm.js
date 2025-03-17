@@ -34,6 +34,11 @@ const ShrimpFarmSchema = Schema({
     ref: 'Client',
     required: true
   },
+  buyerItBelongs: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
   deletedAt: {
     type: Date,
     default: null
