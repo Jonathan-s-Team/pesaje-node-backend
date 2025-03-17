@@ -275,7 +275,7 @@ const seedPermissions = async () => {
                         if (role.name === 'Admin' || role.name === 'Secretaria') {
                             actions = [];
                         } else if (role.name === 'Comprador') {
-                            actions = [Permission.VIEW, Permission.ADD];
+                            actions = [Permission.VIEW, Permission.ADD, Permission.EDIT];
                         }
                         break;
 
