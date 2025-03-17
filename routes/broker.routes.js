@@ -54,13 +54,25 @@ router.post(
         check('person.names', 'Names are required').notEmpty(),
         check('person.lastNames', 'Last names are required').notEmpty(),
         check('person.identification', 'Identification is required').notEmpty(),
-        check('person.birthDate', 'Birth date is required').isISO8601(),
+        check('person.birthDate')
+            .optional({ nullable: true }) // Allows missing or null values
+            .isISO8601()
+            .toDate()
+            .withMessage('birthDate must be a valid ISO 8601 date string'),
         check('person.address', 'Address is required').notEmpty(),
         check('person.mobilePhone', 'Mobile phone is required').notEmpty(),
-        check('person.email', 'Email is required').isEmail(),
-        check('person.emergencyContactName', 'Emergency contact name is required').notEmpty(),
-        check('person.emergencyContactPhone', 'Emergency contact phone is required').notEmpty(),
-
+        check('person.email')
+            .optional({ nullable: true }) // Allows missing or null values
+            .isEmail()
+            .withMessage('Invalid email format'),
+        check('person.emergencyContactName')
+            .optional({ nullable: true }) // Allows missing or null values
+            .notEmpty()
+            .withMessage('Emergency contact name cannot be empty'),
+        check('person.emergencyContactPhone')
+            .optional({ nullable: true }) // Allows missing or null values
+            .notEmpty()
+            .withMessage('Emergency contact phone cannot be empty'),
         // Validate buyer ID
         check('buyerItBelongs', 'User ID is required').isMongoId(),
         validateFields,
@@ -75,12 +87,25 @@ router.put(
         check('person.names', 'Names are required').optional().notEmpty(),
         check('person.lastNames', 'Last names are required').optional().notEmpty(),
         check('person.identification', 'Identification is required').optional().notEmpty(),
-        check('person.birthDate', 'Birth date is required').optional().isISO8601(),
+        check('person.birthDate')
+            .optional({ nullable: true }) // Allows missing or null values
+            .isISO8601()
+            .toDate()
+            .withMessage('birthDate must be a valid ISO 8601 date string'),
         check('person.address', 'Address is required').optional().notEmpty(),
         check('person.mobilePhone', 'Mobile phone is required').optional().notEmpty(),
-        check('person.email', 'Email is required').optional().isEmail(),
-        check('person.emergencyContactName', 'Emergency contact name is required').optional().notEmpty(),
-        check('person.emergencyContactPhone', 'Emergency contact phone is required').optional().notEmpty(),
+        check('person.email')
+            .optional({ nullable: true }) // Allows missing or null values
+            .isEmail()
+            .withMessage('Invalid email format'),
+        check('person.emergencyContactName')
+            .optional({ nullable: true }) // Allows missing or null values
+            .notEmpty()
+            .withMessage('Emergency contact name cannot be empty'),
+        check('person.emergencyContactPhone')
+            .optional({ nullable: true }) // Allows missing or null values
+            .notEmpty()
+            .withMessage('Emergency contact phone cannot be empty'),
 
         // Validate buyer ID
         check('buyerItBelongs', 'User ID is required').optional().isMongoId(),

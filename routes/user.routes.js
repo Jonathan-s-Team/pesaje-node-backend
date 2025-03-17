@@ -22,12 +22,25 @@ router.post(
         check('person.names', 'Person names are required').not().isEmpty(),
         check('person.lastNames', 'Person last names are required').not().isEmpty(),
         check('person.identification', 'Identification is required').not().isEmpty(),
-        check('person.birthDate', 'Birthdate must be a valid date').isISO8601(),
+        check('person.birthDate')
+            .optional({ nullable: true }) // Allows missing or null values
+            .isISO8601()
+            .toDate()
+            .withMessage('birthDate must be a valid ISO 8601 date string'),
         check('person.address', 'Address is required').not().isEmpty(),
         check('person.mobilePhone', 'Mobile phone is required').not().isEmpty(),
-        check('person.email', 'Valid email is required').isEmail(),
-        check('person.emergencyContactName', 'Emergency contact name is required').not().isEmpty(),
-        check('person.emergencyContactPhone', 'Emergency contact phone is required').not().isEmpty(),
+        check('person.email')
+            .optional({ nullable: true }) // Allows missing or null values
+            .isEmail()
+            .withMessage('Invalid email format'),
+        check('person.emergencyContactName')
+            .optional({ nullable: true }) // Allows missing or null values
+            .notEmpty()
+            .withMessage('Emergency contact name cannot be empty'),
+        check('person.emergencyContactPhone')
+            .optional({ nullable: true }) // Allows missing or null values
+            .notEmpty()
+            .withMessage('Emergency contact phone cannot be empty'),
 
         validateFields,
     ],
@@ -73,12 +86,25 @@ router.put(
         check('person.names', 'Person names cannot be empty').optional().not().isEmpty(),
         check('person.lastNames', 'Person last names cannot be empty').optional().not().isEmpty(),
         check('person.identification', 'Identification cannot be empty').optional().not().isEmpty(),
-        check('person.birthDate', 'Birthdate must be a valid date').optional().isISO8601(),
+        check('person.birthDate')
+            .optional({ nullable: true }) // Allows missing or null values
+            .isISO8601()
+            .toDate()
+            .withMessage('birthDate must be a valid ISO 8601 date string'),
         check('person.address', 'Address cannot be empty').optional().not().isEmpty(),
         check('person.mobilePhone', 'Mobile phone cannot be empty').not().isEmpty(),
-        check('person.email', 'Valid email is required').optional().isEmail(),
-        check('person.emergencyContactName', 'Emergency contact name cannot be empty').optional().not().isEmpty(),
-        check('person.emergencyContactPhone', 'Emergency contact phone cannot be empty').optional().not().isEmpty(),
+        check('person.email')
+            .optional({ nullable: true }) // Allows missing or null values
+            .isEmail()
+            .withMessage('Invalid email format'),
+        check('person.emergencyContactName')
+            .optional({ nullable: true }) // Allows missing or null values
+            .notEmpty()
+            .withMessage('Emergency contact name cannot be empty'),
+        check('person.emergencyContactPhone')
+            .optional({ nullable: true }) // Allows missing or null values
+            .notEmpty()
+            .withMessage('Emergency contact phone cannot be empty'),
 
         validateFields,
     ],

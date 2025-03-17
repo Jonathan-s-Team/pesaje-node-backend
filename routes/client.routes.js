@@ -18,12 +18,25 @@ router.post(
         check('person.names', 'Names are required').notEmpty(),
         check('person.lastNames', 'Last names are required').notEmpty(),
         check('person.identification', 'Identification is required').notEmpty(),
-        check('person.birthDate', 'Birth date is required').isISO8601(),
+        check('person.birthDate')
+            .optional({ nullable: true }) // Allows missing or null values
+            .isISO8601()
+            .toDate()
+            .withMessage('birthDate must be a valid ISO 8601 date string'),
         check('person.address', 'Address is required').notEmpty(),
         check('person.mobilePhone', 'Mobile phone is required').notEmpty(),
-        check('person.email', 'Email is required').isEmail(),
-        check('person.emergencyContactName', 'Emergency contact name is required').notEmpty(),
-        check('person.emergencyContactPhone', 'Emergency contact phone is required').notEmpty(),
+        check('person.email')
+            .optional({ nullable: true }) // Allows missing or null values
+            .isEmail()
+            .withMessage('Invalid email format'),
+        check('person.emergencyContactName')
+            .optional({ nullable: true }) // Allows missing or null values
+            .notEmpty()
+            .withMessage('Emergency contact name cannot be empty'),
+        check('person.emergencyContactPhone')
+            .optional({ nullable: true }) // Allows missing or null values
+            .notEmpty()
+            .withMessage('Emergency contact phone cannot be empty'),
 
         // Optional Fields Validation
         check('person.photo').optional().isString(),
@@ -54,12 +67,25 @@ router.put(
         check('person.names').optional().notEmpty().withMessage('Names cannot be empty'),
         check('person.lastNames').optional().notEmpty().withMessage('Last names cannot be empty'),
         check('person.identification').optional().notEmpty().withMessage('Identification cannot be empty'),
-        check('person.birthDate').optional().isISO8601().withMessage('Invalid birth date format (ISO 8601 required)'),
+        check('person.birthDate')
+            .optional({ nullable: true }) // Allows missing or null values
+            .isISO8601()
+            .toDate()
+            .withMessage('birthDate must be a valid ISO 8601 date string'),
         check('person.address').optional().notEmpty().withMessage('Address cannot be empty'),
         check('person.mobilePhone').optional().notEmpty().withMessage('Mobile phone cannot be empty'),
-        check('person.email').optional().isEmail().withMessage('Invalid email format'),
-        check('person.emergencyContactName').optional().notEmpty().withMessage('Emergency contact name cannot be empty'),
-        check('person.emergencyContactPhone').optional().notEmpty().withMessage('Emergency contact phone cannot be empty'),
+        check('person.email')
+            .optional({ nullable: true }) // Allows missing or null values
+            .isEmail()
+            .withMessage('Invalid email format'),
+        check('person.emergencyContactName')
+            .optional({ nullable: true }) // Allows missing or null values
+            .notEmpty()
+            .withMessage('Emergency contact name cannot be empty'),
+        check('person.emergencyContactPhone')
+            .optional({ nullable: true }) // Allows missing or null values
+            .notEmpty()
+            .withMessage('Emergency contact phone cannot be empty'),
 
         // Optional Fields Validation
         check('person.photo').optional().isString(),
