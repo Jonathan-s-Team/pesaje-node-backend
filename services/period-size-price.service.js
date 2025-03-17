@@ -82,7 +82,7 @@ const create = async (data) => {
 
         // ✅ Create the Period only after validation
         const period = await dbAdapter.periodAdapter.create(
-            { name: data.name, receivedDateTime: data.receivedDateTime, company: data.company },
+            { name: data.name, receivedDateTime: data.receivedDateTime, company: data.company, fromDate: data.fromDate, timeOfDay: data.timeOfDay },
             { session }
         );
 
@@ -112,7 +112,7 @@ const create = async (data) => {
 };
 
 const update = async (periodId, data) => {
-    const { receivedDateTime, sizePrices } = data;
+    const { receivedDateTime, sizePrices, fromDate, timeOfDay } = data;
 
     // Find the period
     const period = await dbAdapter.periodAdapter.getById(periodId);
@@ -123,6 +123,11 @@ const update = async (periodId, data) => {
     // Validate receivedDateTime format (if provided)
     if (receivedDateTime && isNaN(Date.parse(receivedDateTime))) {
         throw new Error('Invalid receivedDateTime format. Use ISO 8601 format.');
+    }
+
+    // Validate receivedDateTime format (if provided)
+    if (fromDate && isNaN(Date.parse(fromDate))) {
+        throw new Error('Invalid fromDate format. Use ISO 8601 format.');
     }
 
     // Validate that sizePrices is provided and not empty
@@ -143,7 +148,7 @@ const update = async (periodId, data) => {
 
     try {
         if (receivedDateTime) {
-            await dbAdapter.periodAdapter.update(periodId, { receivedDateTime }, { session: transaction.session });
+            await dbAdapter.periodAdapter.update(periodId, { receivedDateTime, fromDate, timeOfDay }, { session: transaction.session });
         }
 
         for (let sp of sizePrices) {

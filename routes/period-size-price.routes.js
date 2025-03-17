@@ -9,6 +9,7 @@ const {
     updatePeriod,
     removePeriod
 } = require('../controllers/period-size-price.controller');
+const TimeOfDayEnum = require('../enums/time-of-day.enum');
 
 const router = express.Router();
 
@@ -40,14 +41,33 @@ router.post(
     [
         validateJWT,
         check('name', 'Name is required').notEmpty(),
+        check('company', 'Company ID must be a valid MongoDB ObjectId').isMongoId(),
         check('receivedDateTime')
             .notEmpty()
             .withMessage('Received Date is required')
             .isISO8601()
             .toDate()
             .withMessage('receivedDateTime must be a valid ISO 8601 date string'),
-        check('company', 'Company ID must be a valid MongoDB ObjectId').isMongoId(),
-        check('sizePrices').optional().isArray(),
+        check('fromDate')
+            .notEmpty()
+            .withMessage('From Date is required')
+            .isISO8601()
+            .toDate()
+            .withMessage('fromDate must be a valid ISO 8601 date string'),
+        check('timeOfDay')
+            .notEmpty()
+            .withMessage('Time of Day is required')
+            .isIn(Object.values(TimeOfDayEnum))
+            .withMessage(`timeOfDay must be one of: ${Object.values(TimeOfDayEnum).join(', ')}`),
+        check('sizePrices')
+            .isArray({ min: 1 })
+            .withMessage('sizePrices must be an array with at least one entry'),
+        check('sizePrices.*.sizeId')
+            .isMongoId()
+            .withMessage('Each sizePrice sizeId must be a valid MongoDB ObjectId'),
+        check('sizePrices.*.price')
+            .isFloat({ min: 0 })
+            .withMessage('Each sizePrice must have a numeric price greater than or equal to 0'),
         validateFields
     ],
     createPeriod
