@@ -5,10 +5,16 @@ const getAll = async (includeDeleted = false) => {
     return await dbAdapter.shrimpFarmAdapter.getAll(query);
 };
 
-const getAllByClientIdAndUserId = async (clientId, userId, includeDeleted = false) => {
-    const query = includeDeleted ? { client: clientId, buyerItBelongs: userId } : { client: clientId, buyerItBelongs: userId, deletedAt: null };
+const getAllByClientIdAndUserId = async (clientId, userId = null, includeDeleted = false) => {
+    const query = includeDeleted ? { client: clientId } : { client: clientId, deletedAt: null };
+
+    if (userId) {
+        query.buyerItBelongs = userId;
+    }
+
     return await dbAdapter.shrimpFarmAdapter.getAll(query);
 };
+
 
 const getById = async (id) => {
     const shrimpFarm = await dbAdapter.shrimpFarmAdapter.getById(id);

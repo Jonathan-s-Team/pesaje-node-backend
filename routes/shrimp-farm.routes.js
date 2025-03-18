@@ -38,9 +38,12 @@ router.get(
     [
         validateJWT,
         query('clientId')
-            .isMongoId().withMessage('Invalid client ID format'),
+            .isMongoId()
+            .withMessage('Invalid client ID format'),
         query('userId')
-            .isMongoId().withMessage('Invalid user ID format'),
+            .optional()
+            .isMongoId()
+            .withMessage('Invalid user ID format'),
         query('includeDeleted')
             .optional()
             .custom(value => {

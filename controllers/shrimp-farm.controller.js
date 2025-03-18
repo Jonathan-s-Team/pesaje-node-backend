@@ -22,12 +22,15 @@ const getShrimpFarmsByClientIdAndUserId = async (req, res = response) => {
     try {
         const { clientId, userId } = req.query;
         const includeDeleted = req.query.includeDeleted === 'true';
+
         const shrimpFarms = await getAllByClientIdAndUserId(clientId, userId, includeDeleted);
+
         res.json({ ok: true, data: shrimpFarms });
     } catch (error) {
         res.status(500).json({ ok: false, message: error.message });
     }
 };
+
 
 const getShrimpFarmById = async (req, res = response) => {
     try {
