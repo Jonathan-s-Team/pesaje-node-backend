@@ -5,6 +5,7 @@ const { validateJWT } = require('../middlewares/validate-jwt');
 const {
     createPurchasePaymentMethod,
     getPurchasePaymentsByPurchaseId,
+    updatePurchasePaymentMethod,
     deletePurchasePaymentMethod
 } = require('../controllers/purchase-payment-method.controller');
 
@@ -37,6 +38,26 @@ router.post(
     ],
     createPurchasePaymentMethod
 );
+
+router.put(
+    '/:id',
+    [
+        validateJWT,
+        check('id', 'Invalid payment method ID').isMongoId(),
+        check('paymentMethod', 'Payment Method ID must be a valid MongoDB ObjectId')
+            .optional()
+            .isMongoId(),
+        check('amount', 'Amount must be a positive number')
+            .optional()
+            .isFloat({ min: 0 }),
+        check('paymentDate', 'Payment date must be a valid ISO 8601 date')
+            .optional()
+            .isISO8601(),
+        validateFields
+    ],
+    updatePurchasePaymentMethod
+);
+
 
 // 🔹 Soft delete a payment method entry
 router.delete(

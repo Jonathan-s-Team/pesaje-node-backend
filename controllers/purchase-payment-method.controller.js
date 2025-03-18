@@ -2,6 +2,7 @@ const { response } = require('express');
 const {
     createPaymentMethod,
     getPaymentsByPurchase,
+    updatePaymentMethod,
     removePaymentMethod
 } = require('../services/purchase-payment-method.service');
 
@@ -26,6 +27,20 @@ const getPurchasePaymentsByPurchaseId = async (req, res = response) => {
     }
 };
 
+const updatePurchasePaymentMethod = async (req, res = response) => {
+    try {
+        const { id } = req.params;
+        const data = req.body;
+
+        const updatedPayment = await updatePaymentMethod(id, data);
+
+        res.json({ ok: true, message: 'Payment method updated successfully', data: updatedPayment });
+    } catch (error) {
+        res.status(500).json({ ok: false, message: error.message });
+    }
+};
+
+
 const deletePurchasePaymentMethod = async (req, res = response) => {
     try {
         const { id } = req.params;
@@ -39,5 +54,6 @@ const deletePurchasePaymentMethod = async (req, res = response) => {
 module.exports = {
     createPurchasePaymentMethod,
     getPurchasePaymentsByPurchaseId,
+    updatePurchasePaymentMethod,
     deletePurchasePaymentMethod
 };

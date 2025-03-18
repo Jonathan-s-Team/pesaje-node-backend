@@ -55,6 +55,72 @@ const createPaymentMethod = async (data) => {
     }
 };
 
+const updatePaymentMethod = async (id, data) => {
+    const transaction = await dbAdapter.purchasePaymentMethodAdapter.startTransaction();
+    try {
+        // Find the existing payment record
+        const payment = await dbAdapter.purchasePaymentMethodAdapter.getById(id);
+        if (!payment) {
+            throw new Error('Payment method not found');
+        }
+
+        // Validate purchase exists
+        const purchase = await dbAdapter.purchaseAdapter.getById(payment.purchase);
+        if (!purchase) {
+            throw new Error('Associated purchase does not exist');
+        }
+
+        // Validate payment method exists if changing it
+        if (data.paymentMethod) {
+            const paymentMethod = await dbAdapter.paymentMethodAdapter.getById(data.paymentMethod);
+            if (!paymentMethod) {
+                throw new Error('New payment method does not exist');
+            }
+        }
+
+        // Get all existing payments excluding the one being updated
+        const existingPayments = await dbAdapter.purchasePaymentMethodAdapter.getAll({
+            purchase: payment.purchase,
+            _id: { $ne: id } // Exclude current payment
+        });
+
+        // Calculate total paid amount including the updated payment amount
+        const totalPaid = existingPayments.reduce((sum, pm) => sum + pm.amount, 0) + (data.amount || payment.amount);
+
+        // Ensure total does not exceed `totalAgreedToPay`
+        if (totalPaid > purchase.totalAgreedToPay) {
+            throw new Error(`Total payments cannot exceed the total agreed amount of ${purchase.totalAgreedToPay}`);
+        }
+
+        // Perform the update
+        await dbAdapter.purchasePaymentMethodAdapter.update(id, data, { session: transaction.session });
+
+        // Determine new purchase status
+        let newStatus;
+        if (totalPaid >= purchase.totalAgreedToPay) {
+            newStatus = PurchaseStatusEnum.READY_FOR_CONFIRMATION;
+        } else if (totalPaid > 0) {
+            newStatus = PurchaseStatusEnum.IN_PROGRESS;
+        } else {
+            newStatus = PurchaseStatusEnum.DRAFT;
+        }
+
+        // Update purchase status if necessary
+        if (purchase.status !== newStatus) {
+            await dbAdapter.purchaseAdapter.update(purchase.id, { status: newStatus }, { session: transaction.session });
+        }
+
+        await transaction.commit();
+        return { id, ...data };
+    } catch (error) {
+        await transaction.rollback();
+        throw new Error(error.message);
+    } finally {
+        await transaction.end();
+    }
+};
+
+
 const getPaymentsByPurchase = async (purchaseId) => {
     const query = purchaseId ? { purchase: purchaseId } : {};
     return await dbAdapter.purchasePaymentMethodAdapter.getAllWithRelations(query, ['paymentMethod']);
@@ -104,5 +170,6 @@ const removePaymentMethod = async (id) => {
 module.exports = {
     createPaymentMethod,
     getPaymentsByPurchase,
+    updatePaymentMethod,
     removePaymentMethod
 };
