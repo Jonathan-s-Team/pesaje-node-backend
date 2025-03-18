@@ -5,8 +5,8 @@ const getAll = async (includeDeleted = false) => {
     return await dbAdapter.shrimpFarmAdapter.getAll(query);
 };
 
-const getAllByClientId = async (clientId, includeDeleted = false) => {
-    const query = includeDeleted ? { client: clientId } : { client: clientId, deletedAt: null };
+const getAllByClientIdAndUserId = async (clientId, userId, includeDeleted = false) => {
+    const query = includeDeleted ? { client: clientId, buyerItBelongs: userId } : { client: clientId, buyerItBelongs: userId, deletedAt: null };
     return await dbAdapter.shrimpFarmAdapter.getAll(query);
 };
 
@@ -47,7 +47,7 @@ const remove = async (id) => {
 
 module.exports = {
     getAll,
-    getAllByClientId,
+    getAllByClientIdAndUserId,
     getById,
     create,
     update,

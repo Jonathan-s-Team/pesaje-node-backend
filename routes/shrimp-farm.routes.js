@@ -4,7 +4,7 @@ const { validateFields } = require('../middlewares/validate-fields');
 const { validateJWT } = require('../middlewares/validate-jwt');
 const {
     getAllShrimpFarms,
-    getShrimpFarmsByClientId,
+    getShrimpFarmsByClientIdAndUserId,
     getShrimpFarmById,
     createShrimpFarm,
     updateShrimpFarm,
@@ -39,6 +39,8 @@ router.get(
         validateJWT,
         query('clientId')
             .isMongoId().withMessage('Invalid client ID format'),
+        query('userId')
+            .isMongoId().withMessage('Invalid user ID format'),
         query('includeDeleted')
             .optional()
             .custom(value => {
@@ -49,7 +51,7 @@ router.get(
             }),
         validateFields
     ],
-    getShrimpFarmsByClientId
+    getShrimpFarmsByClientIdAndUserId
 );
 
 // 🔹 Get shrimp farm by ID

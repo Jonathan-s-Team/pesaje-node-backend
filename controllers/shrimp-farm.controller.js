@@ -1,7 +1,7 @@
 const { response } = require('express');
 const {
     getAll,
-    getAllByClientId,
+    getAllByClientIdAndUserId,
     getById,
     create,
     update,
@@ -18,11 +18,11 @@ const getAllShrimpFarms = async (req, res = response) => {
     }
 };
 
-const getShrimpFarmsByClientId = async (req, res = response) => {
+const getShrimpFarmsByClientIdAndUserId = async (req, res = response) => {
     try {
-        const { clientId } = req.query;
+        const { clientId, userId } = req.query;
         const includeDeleted = req.query.includeDeleted === 'true';
-        const shrimpFarms = await getAllByClientId(clientId, includeDeleted);
+        const shrimpFarms = await getAllByClientIdAndUserId(clientId, userId, includeDeleted);
         res.json({ ok: true, data: shrimpFarms });
     } catch (error) {
         res.status(500).json({ ok: false, message: error.message });
@@ -76,7 +76,7 @@ const removeShrimpFarm = async (req, res) => {
 
 module.exports = {
     getAllShrimpFarms,
-    getShrimpFarmsByClientId,
+    getShrimpFarmsByClientIdAndUserId,
     getShrimpFarmById,
     createShrimpFarm,
     updateShrimpFarm,
