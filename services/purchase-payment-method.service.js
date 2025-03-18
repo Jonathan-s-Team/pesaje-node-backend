@@ -57,7 +57,7 @@ const createPaymentMethod = async (data) => {
 
 const getPaymentsByPurchase = async (purchaseId) => {
     const query = purchaseId ? { purchase: purchaseId } : {};
-    return await dbAdapter.purchasePaymentMethodAdapter.getAll(query);
+    return await dbAdapter.purchasePaymentMethodAdapter.getAllWithRelations(query, ['paymentMethod']);
 };
 
 const removePaymentMethod = async (id) => {
