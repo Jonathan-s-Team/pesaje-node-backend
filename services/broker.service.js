@@ -107,7 +107,6 @@ const update = async (id, data) => {
 
     // Prevent updating `buyerItBelongs`
     const updateData = { ...data };
-    delete updateData.buyerItBelongs;
     delete updateData.person;
 
     return await dbAdapter.brokerAdapter.update(id, updateData);
