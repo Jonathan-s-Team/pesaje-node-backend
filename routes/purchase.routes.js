@@ -4,7 +4,7 @@ const { validateFields } = require('../middlewares/validate-fields');
 const { validateJWT } = require('../middlewares/validate-jwt');
 
 const {
-    getAllPurchases,
+    getAllPurchasesByParams,
     getPurchaseById,
     createPurchase,
     updatePurchase,
@@ -15,7 +15,7 @@ const router = express.Router();
 
 // 🔹 Get all purchases with optional filters
 router.get(
-    '/',
+    '/by-params',
     [
         validateJWT,
         query('includeDeleted')
@@ -29,9 +29,13 @@ router.get(
         query('clientId').optional().isMongoId().withMessage('Client ID must be a valid MongoDB ObjectId'),
         query('userId').optional().isMongoId().withMessage('User ID must be a valid MongoDB ObjectId'),
         query('periodId').optional().isMongoId().withMessage('Period ID must be a valid MongoDB ObjectId'),
+        query('controlNumber')
+            .optional()
+            .isNumeric()
+            .withMessage('Control number must be a numeric value'),
         validateFields,
     ],
-    getAllPurchases
+    getAllPurchasesByParams
 );
 
 // 🔹 Get purchase by ID

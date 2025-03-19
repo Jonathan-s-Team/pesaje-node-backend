@@ -1,24 +1,25 @@
 const { response } = require('express');
 const {
-    getAll,
+    getAllByParams,
     getById,
     create,
     update,
     remove
 } = require('../services/purchase.service');
 
-const getAllPurchases = async (req, res = response) => {
+const getAllPurchasesByParams = async (req, res = response) => {
     try {
-        const { includeDeleted, clientId, userId, periodId } = req.query;
+        const { includeDeleted, clientId, userId, periodId, controlNumber } = req.query;
 
         const filters = {
             includeDeleted: includeDeleted === 'true',
             clientId,
             userId,
             periodId,
+            controlNumber
         };
 
-        const purchases = await getAll(filters);
+        const purchases = await getAllByParams(filters);
 
         res.json({ ok: true, data: purchases });
     } catch (error) {
@@ -66,7 +67,7 @@ const deletePurchase = async (req, res = response) => {
 };
 
 module.exports = {
-    getAllPurchases,
+    getAllPurchasesByParams,
     getPurchaseById,
     createPurchase,
     updatePurchase,

@@ -1,32 +1,57 @@
 const dbAdapter = require('../adapters');
 const PurchaseStatusEnum = require('../enums/purchase-status.enum');
 
-const getAll = async ({ includeDeleted = false, clientId, userId, periodId }) => {
+const getAllByParams = async ({ includeDeleted = false, clientId, userId, periodId, controlNumber }) => {
     // Define query conditions
     const query = includeDeleted ? {} : { deletedAt: null };
 
     if (clientId) query.client = clientId;
     if (userId) query.buyer = userId;
     if (periodId) query.period = periodId;
+    if (controlNumber) query.controlNumber = controlNumber;
 
     // Fetch purchases with relations
     const purchases = await dbAdapter.purchaseAdapter.getAllWithRelations(query, [
-        'buyer',
-        'company',
-        'broker',
-        'client',
+        // 'buyer',
+        // 'company',
+        // 'broker',
+        // 'client',
     ]);
 
-    // Remove `buyer.password` from response
-    return purchases.map((purchase) => {
-        if (purchase.buyer) {
-            purchase.buyer = {
-                ...purchase.buyer,
-                password: undefined, // Remove password field
-            };
-        }
-        return purchase;
+    // Retrieve all payments related to these purchases
+    const purchaseIds = purchases.map(p => p.id);
+    const payments = await dbAdapter.purchasePaymentMethodAdapter.getAll({
+        purchase: { $in: purchaseIds },
+        deletedAt: null, // Consider only active payments
     });
+
+    // Remove `buyer.password` from response
+    // return purchases.map((purchase) => {
+    //     if (purchase.buyer) {
+    //         purchase.buyer = {
+    //             ...purchase.buyer,
+    //             password: undefined, // Remove password field
+    //         };
+    //     }
+    //     return purchase;
+    // });
+
+    // Compute totalPayed for each purchase
+    const totalPaymentsMap = payments.reduce((acc, payment) => {
+        if (!acc[payment.purchase]) {
+            acc[payment.purchase] = 0;
+        }
+        acc[payment.purchase] += payment.amount;
+        return acc;
+    }, {});
+
+    // Attach `totalPayed` to each purchase
+    const result = purchases.map(purchase => ({
+        ...purchase,
+        totalPayed: totalPaymentsMap[purchase.id] || 0, // Default to 0 if no payments
+    }));
+
+    return result;
 };
 
 const getById = async (id) => {
@@ -70,7 +95,7 @@ const create = async (data) => {
 
     // Set initial status
     data.status = PurchaseStatusEnum.DRAFT;
-    
+
     // Create the purchase record
     return await dbAdapter.purchaseAdapter.create(data);
 };
@@ -91,7 +116,7 @@ const remove = async (id) => {
 };
 
 module.exports = {
-    getAll,
+    getAllByParams,
     getById,
     create,
     update,
