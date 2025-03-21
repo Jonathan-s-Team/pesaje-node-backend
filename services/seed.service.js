@@ -193,6 +193,7 @@ const seedOptions = async () => {
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f11"), name: 'Compañía', route: '/sales/company', parentName: 'Ventas' },
             // { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f12"), name: 'Local', route: '/sales/local', parentName: 'Ventas' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f04"), name: 'Gestionar Usuarios', route: '/settings/users', parentName: 'Administración' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f18"), name: 'Gestionar Brokers', route: '/settings/brokers', parentName: 'Administración' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f17"), name: 'Gestionar Clientes', route: '/settings/clients', parentName: 'Administración' },
         ];
 
@@ -262,10 +263,8 @@ const seedPermissions = async () => {
                         break;
 
                     case 'Brokers':
-                        if (role.name === 'Admin') {
-                            actions = [Permission.VIEW, Permission.ADD, Permission.EDIT, Permission.DELETE];
-                        } else if (role.name === 'Secretaria') {
-                            actions = [Permission.VIEW, Permission.ADD, Permission.EDIT];
+                        if (role.name === 'Admin' || role.name === 'Secretaria') {
+                            actions = [];
                         } else if (role.name === 'Comprador') {
                             actions = [Permission.VIEW, Permission.ADD];
                         }
@@ -340,6 +339,16 @@ const seedPermissions = async () => {
                         break;
 
                     case 'Gestionar Usuarios':
+                        if (role.name === 'Admin') {
+                            actions = [Permission.VIEW, Permission.ADD, Permission.EDIT, Permission.DELETE];
+                        } else if (role.name === 'Secretaria') {
+                            actions = [Permission.VIEW, Permission.ADD, Permission.EDIT];
+                        } else if (role.name === 'Comprador') {
+                            actions = [];
+                        }
+                        break;
+
+                    case 'Gestionar Brokers':
                         if (role.name === 'Admin') {
                             actions = [Permission.VIEW, Permission.ADD, Permission.EDIT, Permission.DELETE];
                         } else if (role.name === 'Secretaria') {
