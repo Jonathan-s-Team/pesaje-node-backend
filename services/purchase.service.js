@@ -56,20 +56,20 @@ const getAllByParams = async ({ includeDeleted = false, clientId, userId, period
 
 const getById = async (id) => {
     const purchase = await dbAdapter.purchaseAdapter.getByIdWithRelations(id, [
-        'buyer',
-        'company',
-        'broker',
-        'client',
-        'shrimpFarm',
+        // 'buyer',
+        // 'company',
+        // 'broker',
+        // 'client',
+        // 'shrimpFarm',
     ]);
 
     // Remove `buyer.password` if it exists
-    if (purchase && purchase.buyer) {
-        purchase.buyer = {
-            ...purchase.buyer,
-            password: undefined, // Remove password field
-        };
-    }
+    // if (purchase && purchase.buyer) {
+    //     purchase.buyer = {
+    //         ...purchase.buyer,
+    //         password: undefined, // Remove password field
+    //     };
+    // }
 
     return purchase;
 };
