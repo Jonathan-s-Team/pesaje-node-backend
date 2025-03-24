@@ -404,7 +404,7 @@ const seedCompanies = async () => {
         // Define fixed IDs for catalog companies
         const fixedCompanies = [
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4a01"), name: "Edpacific" },
-            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4a02"), name: "Prodex" }
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4a02"), name: "Prodex" },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4a03"), name: "Local" }
         ];
 
