@@ -2,7 +2,7 @@
 
 const bcrypt = require('bcryptjs');
 
-const { Option, Role, RolePermission, User, PaymentInfo, Person, Broker, Client, Size, Company, Period, SizePrice, ShrimpFarm, Purchase, PaymentMethod, PurchasePaymentMethod, Counter } = require('../models');
+const { Option, Role, RolePermission, User, PaymentInfo, Person, Broker, Client, Size, Company, Period, SizePrice, ShrimpFarm, Purchase, PaymentMethod, PurchasePaymentMethod, Counter, LogisticsItem, Logistics, LogisticsType } = require('../models');
 const Permission = require('../enums/permission.enum');
 const SizeTypeEnum = require('../enums/size-type.enum');
 const { default: mongoose } = require('mongoose');
@@ -184,7 +184,7 @@ const seedOptions = async () => {
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f06"), name: 'Clientes', route: '/clients', icon: 'people' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f07"), name: 'Precios', route: '/prices', icon: 'price-tag' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f08"), name: 'Compras', icon: 'receipt-square' },
-            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f09"), name: 'Logística', route: '/logistics', icon: 'parcel-tracking' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f09"), name: 'Logística', icon: 'parcel-tracking' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f10"), name: 'Ventas', icon: 'tag' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f15"), name: 'Reportes', icon: 'file-sheet' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f16"), name: 'Administración', icon: 'gear' }
@@ -195,6 +195,8 @@ const seedOptions = async () => {
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f05"), name: 'Brokers', route: '/personal-profile/brokers', parentName: 'Perfil Personal' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f13"), name: 'Nueva Compra', route: '/purchases/new', parentName: 'Compras' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f14"), name: 'Compras Recientes', route: '/purchases/list', parentName: 'Compras' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f19"), name: 'Nueva Logística', route: '/logistics/new', parentName: 'Logística' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f20"), name: 'Logísticas Recientes', route: '/logistics/list', parentName: 'Logística' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f11"), name: 'Compañía', route: '/sales/company', parentName: 'Ventas' },
             // { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f12"), name: 'Local', route: '/sales/local', parentName: 'Ventas' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f04"), name: 'Gestionar Usuarios', route: '/settings/users', parentName: 'Administración' },
@@ -312,7 +314,23 @@ const seedPermissions = async () => {
                         break;
 
                     case 'Logística':
-                        actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
+                        actions = [Permission.VIEW];
+                        break;
+
+                    case 'Nueva Logística':
+                        if (role.name === 'Admin' || role.name === 'Secretaria') {
+                            actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
+                        } else if (role.name === 'Comprador') {
+                            actions = [Permission.VIEW, Permission.ADD];
+                        }
+                        break;
+
+                    case 'Logísticas Recientes':
+                        if (role.name === 'Admin' || role.name === 'Secretaria') {
+                            actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
+                        } else if (role.name === 'Comprador') {
+                            actions = [Permission.VIEW, Permission.ADD];
+                        }
                         break;
 
                     case 'Ventas':
