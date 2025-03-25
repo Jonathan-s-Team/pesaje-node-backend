@@ -75,7 +75,6 @@ const update = async (id, data) => {
     const transaction = await dbAdapter.logisticsAdapter.startTransaction();
     try {
         const existingLogistics = await dbAdapter.logisticsAdapter.getById(id);
-        console.log(existingLogistics)
         if (!existingLogistics) {
             throw new Error('Logistics record not found');
         }

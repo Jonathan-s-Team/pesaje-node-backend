@@ -73,34 +73,27 @@ class MongooseGenericAdapter extends DatabaseAdapter {
      * Apply `toJSON()` transformation to the main document and its populated fields.
      */
     transformDocument(doc) {
-        if (!doc) return null;
+        if (!doc || typeof doc.toJSON !== 'function') return null;
 
-        // Convert root document
         const transformedDoc = doc.toJSON();
-
-        // Extract the main object without populated fields
         const { ...mainObject } = transformedDoc;
 
-        // Loop through all fields and manually reassign populated fields
         Object.keys(transformedDoc).forEach(key => {
-            const field = doc[key]; // Get the actual populated field from the original document
-
+            const field = doc[key];
             if (typeof field === 'object' && field !== null) {
-                // If it's an array of populated objects, apply `toJSON()` to each
                 if (Array.isArray(field)) {
-                    mainObject[key] = field.map(item => (item.toJSON ? item.toJSON() : item));
-                }
-                // If it's a single populated object, apply `toJSON()`
-                else if (typeof field.toJSON === 'function') {
+                    mainObject[key] = field.map(item => (item?.toJSON ? item.toJSON() : item));
+                } else if (typeof field.toJSON === 'function') {
                     mainObject[key] = field.toJSON();
                 } else {
-                    mainObject[key] = field; // Keep the value as it is if not transformable
+                    mainObject[key] = field;
                 }
             }
         });
 
         return mainObject;
     }
+
 }
 
 module.exports = MongooseGenericAdapter;
