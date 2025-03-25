@@ -17,6 +17,7 @@ const seedDatabase = async (keepTxData = false) => {
     await seedCompanies();
     await seedSizes();
     await seedPaymentMethods();
+    await seedLogisticsTypes();
 
     // Encriptar contraseña
     const salt = bcrypt.genSaltSync();
@@ -123,6 +124,9 @@ const cleanDatabase = async (keepTxData) => {
     await Purchase.deleteMany({});
     await PurchasePaymentMethod.deleteMany({});
 
+    await LogisticsItem.deleteMany({});
+    await Logistics.deleteMany({});
+
 
     await Size.deleteMany({});
     await Option.deleteMany({});
@@ -130,6 +134,7 @@ const cleanDatabase = async (keepTxData) => {
     await RolePermission.deleteMany({});
     await Company.deleteMany({});
     await PaymentMethod.deleteMany({});
+    await LogisticsType.deleteMany({});
     console.log('Cleaning completed');
 };
 
@@ -524,6 +529,64 @@ const seedPaymentMethods = async () => {
         console.log('✅ Payment Methods seeding complete.');
     } catch (error) {
         console.error('❌ Error seeding companies:', error.message);
+    }
+};
+
+const seedLogisticsTypes = async () => {
+    try {
+        const fixedLogisticsTypes = [
+            {
+                _id: new mongoose.Types.ObjectId("60f9b7b2c8b3f10ffc2e5b01"),
+                name: "Trabajadores",
+                status: LogisticsTypeEnum.PERSONNEL,
+            },
+            {
+                _id: new mongoose.Types.ObjectId("60f9b7b2c8b3f10ffc2e5b02"),
+                name: "Responsable",
+                status: LogisticsTypeEnum.PERSONNEL,
+            },
+            {
+                _id: new mongoose.Types.ObjectId("60f9b7b2c8b3f10ffc2e5b03"),
+                name: "Responsable 2",
+                status: LogisticsTypeEnum.PERSONNEL,
+            },
+            {
+                _id: new mongoose.Types.ObjectId("60f9b7b2c8b3f10ffc2e5b04"),
+                name: "Carro",
+                status: LogisticsTypeEnum.INPUTS,
+            },
+            {
+                _id: new mongoose.Types.ObjectId("60f9b7b2c8b3f10ffc2e5b05"),
+                name: "Hielo",
+                status: LogisticsTypeEnum.INPUTS,
+            },
+            {
+                _id: new mongoose.Types.ObjectId("60f9b7b2c8b3f10ffc2e5b06"),
+                name: "Comida",
+                status: LogisticsTypeEnum.INPUTS,
+            },
+            {
+                _id: new mongoose.Types.ObjectId("60f9b7b2c8b3f10ffc2e5b07"),
+                name: "Otros",
+                status: LogisticsTypeEnum.INPUTS,
+            },
+        ];
+
+        await Promise.all(
+            fixedLogisticsTypes.map(async (type) => {
+                const exists = await LogisticsType.findById(type._id);
+                if (!exists) {
+                    await LogisticsType.create(type);
+                    console.log(`✅ Inserted logistics type: ${type.name}`);
+                } else {
+                    console.log(`⚠️ Logistics type already exists: ${type.name}, skipping...`);
+                }
+            })
+        );
+
+        console.log('✅ Logistics Types seeding complete.');
+    } catch (error) {
+        console.error('❌ Error seeding logistics types:', error.message);
     }
 };
 

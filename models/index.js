@@ -7,6 +7,7 @@ const profileModelsPath = `./${dbType}/profile`;
 const clientModelsPath = `./${dbType}/client`;
 const priceModelsPath = `./${dbType}/price`;
 const purchaseModelsPath = `./${dbType}/purchase`;
+const logisticsModelsPath = `./${dbType}/logistics`;
 
 // Import control models
 const Counter = require(`${controlModelsPath}/counter`);
@@ -32,10 +33,15 @@ const Company = require(`${priceModelsPath}/company`);
 const Period = require(`${priceModelsPath}/period`);
 const SizePrice = require(`${priceModelsPath}/size-price`);
 
-// Import pruchase models
+// Import purchase models
 const Purchase = require(`${purchaseModelsPath}/purchase`);
 const PaymentMethod = require(`${purchaseModelsPath}/payment-method`);
 const PurchasePaymentMethod = require(`${purchaseModelsPath}/purchase-payment-method`);
+
+// Import logistics models
+const Logisctics = require(`${logisticsModelsPath}/logistics`);
+const LogisticsItem = require(`${logisticsModelsPath}/logistics-item`);
+const LogisticsType = require(`${logisticsModelsPath}/logistics-type`);
 
 console.log(`Using ${dbType.toUpperCase()} Models`);
 
@@ -57,4 +63,7 @@ module.exports = {
     Purchase,
     PaymentMethod,
     PurchasePaymentMethod,
+    Logisctics,
+    LogisticsItem,
+    LogisticsType
 };
