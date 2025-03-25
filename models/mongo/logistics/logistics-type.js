@@ -7,7 +7,7 @@ const LogisticsTypeSchema = Schema({
     type: String,
     required: true,
   },
-  status: {
+  type: {
     type: String,
     enum: LogisticsTypeEnum,
     required: true,

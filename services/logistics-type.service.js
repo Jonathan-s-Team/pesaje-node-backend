@@ -1,8 +1,8 @@
 const dbAdapter = require('../adapters');
 
-const getAll = async () => {
-
-    return await dbAdapter.paymentMethodAdapter.getAll();
+const getAll = async (status = null) => {
+    const query = status ? { status } : {};
+    return await dbAdapter.logisticsTypeAdapter.getAll(query);
 };
 
 module.exports = {

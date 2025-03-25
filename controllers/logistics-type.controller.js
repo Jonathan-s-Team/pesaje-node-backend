@@ -1,9 +1,11 @@
 const { response } = require('express');
-const { getAll } = require('../services/payment-method.service');
+const { getAll } = require('../services/logistics-type.service');
 
-const getTypes = async (req, res = response) => {
+const getLogisticsTypes = async (req, res = response) => {
     try {
-        const data = await getAll();
+        const type = req.query.type || null;
+
+        const data = await getAll(type);
         res.status(200).json({
             ok: true,
             data,
@@ -17,5 +19,5 @@ const getTypes = async (req, res = response) => {
 };
 
 module.exports = {
-    getTypes
+    getLogisticsTypes
 }

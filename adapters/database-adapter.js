@@ -19,6 +19,10 @@ class DatabaseAdapter {
         throw new Error('Method not implemented');
     }
 
+    async removePermanently(id) {
+        throw new Error('Method not implemented');
+    }
+
     /**
      * Start a transaction (to be implemented by database-specific adapters)
      */

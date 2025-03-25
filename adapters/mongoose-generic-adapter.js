@@ -49,6 +49,12 @@ class MongooseGenericAdapter extends DatabaseAdapter {
         return deletedDocument ? this.transformDocument(deletedDocument) : null;
     }
 
+    async removePermanently(id) {
+        const result = await this.model.findByIdAndDelete(id);
+        return result ? this.transformDocument(result) : null;
+    }
+
+
     /**
      * Start a MongoDB Transaction Session
      */

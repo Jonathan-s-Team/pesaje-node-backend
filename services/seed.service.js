@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const { Option, Role, RolePermission, User, PaymentInfo, Person, Broker, Client, Size, Company, Period, SizePrice, ShrimpFarm, Purchase, PaymentMethod, PurchasePaymentMethod, Counter, LogisticsItem, Logistics, LogisticsType } = require('../models');
 const Permission = require('../enums/permission.enum');
 const SizeTypeEnum = require('../enums/size-type.enum');
+const LogisticsTypeEnum = require('../enums/logistics-types.enum');
 const { default: mongoose } = require('mongoose');
 
 
@@ -556,37 +557,37 @@ const seedLogisticsTypes = async () => {
             {
                 _id: new mongoose.Types.ObjectId("60f9b7b2c8b3f10ffc2e5b01"),
                 name: "Trabajadores",
-                status: LogisticsTypeEnum.PERSONNEL,
+                type: LogisticsTypeEnum.PERSONNEL,
             },
             {
                 _id: new mongoose.Types.ObjectId("60f9b7b2c8b3f10ffc2e5b02"),
                 name: "Responsable",
-                status: LogisticsTypeEnum.PERSONNEL,
+                type: LogisticsTypeEnum.PERSONNEL,
             },
             {
                 _id: new mongoose.Types.ObjectId("60f9b7b2c8b3f10ffc2e5b03"),
                 name: "Responsable 2",
-                status: LogisticsTypeEnum.PERSONNEL,
+                type: LogisticsTypeEnum.PERSONNEL,
             },
             {
                 _id: new mongoose.Types.ObjectId("60f9b7b2c8b3f10ffc2e5b04"),
                 name: "Carro",
-                status: LogisticsTypeEnum.INPUTS,
+                type: LogisticsTypeEnum.INPUTS,
             },
             {
                 _id: new mongoose.Types.ObjectId("60f9b7b2c8b3f10ffc2e5b05"),
                 name: "Hielo",
-                status: LogisticsTypeEnum.INPUTS,
+                type: LogisticsTypeEnum.INPUTS,
             },
             {
                 _id: new mongoose.Types.ObjectId("60f9b7b2c8b3f10ffc2e5b06"),
                 name: "Comida",
-                status: LogisticsTypeEnum.INPUTS,
+                type: LogisticsTypeEnum.INPUTS,
             },
             {
                 _id: new mongoose.Types.ObjectId("60f9b7b2c8b3f10ffc2e5b07"),
                 name: "Otros",
-                status: LogisticsTypeEnum.INPUTS,
+                type: LogisticsTypeEnum.INPUTS,
             },
         ];
 
