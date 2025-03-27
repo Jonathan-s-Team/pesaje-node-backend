@@ -21,6 +21,9 @@ const LogisticsItemSchema = Schema({
     required: true,
     min: 0
   },
+  description: {
+    type: String,
+  },
   deletedAt: {
     type: Date,
     default: null
