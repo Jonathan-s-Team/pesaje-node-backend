@@ -28,6 +28,11 @@ const PurchaseSchema = Schema({
     ref: 'ShrimpFarm',
     required: true
   },
+  period: {
+    type: Schema.Types.ObjectId,
+    ref: 'Period',
+    required: true
+  },
   controlNumber: { // Auto-incremented
     type: Number,
     unique: true
