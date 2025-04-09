@@ -20,7 +20,7 @@ const createPaymentMethod = async (data) => {
         const existingPayments = await dbAdapter.purchasePaymentMethodAdapter.getAll({ purchase: data.purchase });
 
         // Calculate total paid amount including this new payment
-        const totalPaid = existingPayments.reduce((sum, pm) => sum + pm.amount, 0) + data.amount;
+        const totalPaid = existingPayments.reduce((sum, pm) => sum + Number(pm.amount), 0) + Number(data.amount);
 
         // Ensure total does not exceed `totalAgreedToPay`
         if (totalPaid > purchase.totalAgreedToPay) {
@@ -33,7 +33,7 @@ const createPaymentMethod = async (data) => {
         // Determine new purchase status
         let newStatus;
         if (totalPaid >= purchase.totalAgreedToPay) {
-            newStatus = PurchaseStatusEnum.READY_FOR_CONFIRMATION;
+            newStatus = PurchaseStatusEnum.COMPLETED;
         } else if (existingPayments.length === 0 && data.amount < purchase.totalAgreedToPay) {
             newStatus = PurchaseStatusEnum.IN_PROGRESS;
         } else {
@@ -85,7 +85,7 @@ const updatePaymentMethod = async (id, data) => {
         });
 
         // Calculate total paid amount including the updated payment amount
-        const totalPaid = existingPayments.reduce((sum, pm) => sum + pm.amount, 0) + (data.amount || payment.amount);
+        const totalPaid = existingPayments.reduce((sum, pm) => sum + Number(pm.amount), 0) + (Number(data.amount) || Number(payment.amount));
 
         // Ensure total does not exceed `totalAgreedToPay`
         if (totalPaid > purchase.totalAgreedToPay) {
@@ -98,7 +98,7 @@ const updatePaymentMethod = async (id, data) => {
         // Determine new purchase status
         let newStatus;
         if (totalPaid >= purchase.totalAgreedToPay) {
-            newStatus = PurchaseStatusEnum.READY_FOR_CONFIRMATION;
+            newStatus = PurchaseStatusEnum.COMPLETED;
         } else if (totalPaid > 0) {
             newStatus = PurchaseStatusEnum.IN_PROGRESS;
         } else {
@@ -152,7 +152,7 @@ const removePaymentMethod = async (id) => {
         if (totalPaid === 0) {
             newStatus = PurchaseStatusEnum.DRAFT;
         } else if (totalPaid >= payment.totalAgreedToPay) {
-            newStatus = PurchaseStatusEnum.READY_FOR_CONFIRMATION;
+            newStatus = PurchaseStatusEnum.COMPLETED;
         }
 
         // Update purchase status
