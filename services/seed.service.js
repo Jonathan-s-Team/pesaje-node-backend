@@ -119,11 +119,10 @@ const cleanDatabase = async (keepTxData) => {
         await User.deleteMany({});
         await Period.deleteMany({});
         await SizePrice.deleteMany({});
+        await Counter.deleteMany({});
+        await Purchase.deleteMany({});
+        await PurchasePaymentMethod.deleteMany({});
     }
-
-    await Counter.deleteMany({});
-    await Purchase.deleteMany({});
-    await PurchasePaymentMethod.deleteMany({});
 
     await LogisticsItem.deleteMany({});
     await Logistics.deleteMany({});
