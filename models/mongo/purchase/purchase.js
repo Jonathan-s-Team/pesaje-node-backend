@@ -31,10 +31,9 @@ const PurchaseSchema = Schema({
   period: {
     type: Schema.Types.ObjectId,
     ref: 'Period',
-    required: true
   },
   controlNumber: { // Auto-incremented
-    type: Number,
+    type: String,
     unique: true
   },
   purchaseDate: {
@@ -127,14 +126,26 @@ PurchaseSchema.index(
 PurchaseSchema.pre('save', async function (next) {
   if (!this.controlNumber) {
     try {
-      const Counter = require('../control/counter'); // ✅ Lazy import to avoid circular dependency
+      const Counter = require('../control/counter'); // Lazy import
+      const Company = require('../price/company'); // Lazy import of Company model
+
+      const company = await Company.findById(this.company);
+      if (!company) {
+        return next(new Error('Company not found when generating controlNumber'));
+      }
+
+      // Determine counter key based on company name
+      const counterKey = company.name === 'Local' ? 'Purchase_Local' : 'Purchase_Company';
+      const prefix = company.name === 'Local' ? 'LC' : 'CO';
+
       const counter = await Counter.findOneAndUpdate(
-        { model: 'Purchase' },
+        { model: counterKey },
         { $inc: { seq: 1 } },
         { new: true, upsert: true }
       );
+
       if (counter) {
-        this.controlNumber = counter.seq;
+        this.controlNumber = `${prefix}-${counter.seq}`;
       }
     } catch (error) {
       return next(error);
@@ -142,6 +153,8 @@ PurchaseSchema.pre('save', async function (next) {
   }
   next();
 });
+
+
 
 PurchaseSchema.method('toJSON', function () {
   const { __v, _id, createdAt, updatedAt, ...object } = this.toObject();

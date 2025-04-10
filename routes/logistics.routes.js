@@ -20,7 +20,10 @@ router.get(
     [
         validateJWT,
         query('userId').optional().isMongoId().withMessage('Invalid user ID format'),
-        query('controlNumber').optional().isNumeric().withMessage('Control number must be numeric'),
+        query('controlNumber')
+            .optional()
+            .isString()
+            .withMessage('Control number must be a string'),
         query('includeDeleted').optional().custom(value => {
             if (value !== 'true' && value !== 'false') {
                 throw new Error('includeDeleted must be either true or false');

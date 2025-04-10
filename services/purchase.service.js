@@ -93,7 +93,6 @@ const getById = async (id) => {
 const create = async (data) => {
     // Define the references and their corresponding adapters
     const references = {
-        period: 'periodAdapter',
         buyer: 'userAdapter',
         company: 'companyAdapter',
         broker: 'brokerAdapter',
@@ -101,7 +100,7 @@ const create = async (data) => {
         shrimpFarm: 'shrimpFarmAdapter'
     };
 
-    // Validate that all referenced IDs exist
+    // Always validate required references
     await Promise.all(Object.entries(references).map(async ([key, adapter]) => {
         const entity = await dbAdapter[adapter].getById(data[key]);
         if (!entity) {
@@ -109,12 +108,21 @@ const create = async (data) => {
         }
     }));
 
+    // Conditionally validate period if present
+    if (data.period) {
+        const period = await dbAdapter.periodAdapter.getById(data.period);
+        if (!period) {
+            throw new Error('Period does not exist');
+        }
+    }
+
     // Set initial status
     data.status = PurchaseStatusEnum.DRAFT;
 
     // Create the purchase record
     return await dbAdapter.purchaseAdapter.create(data);
 };
+
 
 
 const update = async (id, data) => {

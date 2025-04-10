@@ -31,8 +31,8 @@ router.get(
         query('periodId').optional().isMongoId().withMessage('Period ID must be a valid MongoDB ObjectId'),
         query('controlNumber')
             .optional()
-            .isNumeric()
-            .withMessage('Control number must be a numeric value'),
+            .isString()
+            .withMessage('Control number must be a string'),
         validateFields,
     ],
     getAllPurchasesByParams
@@ -51,6 +51,10 @@ router.post(
         check('broker', 'Broker ID is required').isMongoId(),
         check('client', 'Client ID is required').isMongoId(),
         check('shrimpFarm', 'Shrimp Farm ID is required').isMongoId(),
+        check('period')
+            .optional()
+            .isMongoId()
+            .withMessage('Period must be a valid MongoDB ObjectId'),
         check('averageGrams', 'Average grams must be a positive number').isFloat({ min: 0 }),
         check('price', 'Price must be a positive number').isFloat({ min: 0 }),
         check('pounds', 'Pounds must be a positive number').isFloat({ min: 0 }),
