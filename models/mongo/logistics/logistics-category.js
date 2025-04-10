@@ -1,15 +1,15 @@
 const { Schema, model } = require('mongoose');
 
-const LogisticsTypeEnum = require('../../../enums/logistics-types.enum');
+const LogisticsCategoryEnum = require('../../../enums/logistics-category.enum');
 
-const LogisticsTypeSchema = Schema({
+const LogisticsCategorySchema = Schema({
   name: {
     type: String,
     required: true,
   },
-  type: {
+  category: {
     type: String,
-    enum: LogisticsTypeEnum,
+    enum: LogisticsCategoryEnum,
     required: true,
   },
   deletedAt: {
@@ -21,11 +21,11 @@ const LogisticsTypeSchema = Schema({
 );
 
 
-LogisticsTypeSchema.method('toJSON', function () {
+LogisticsCategorySchema.method('toJSON', function () {
   const { __v, _id, createdAt, updatedAt, ...object } = this.toObject();
   object.id = _id;
   return object;
 });
 
 
-module.exports = model('LogisticsType', LogisticsTypeSchema);
+module.exports = model('LogisticsCategory', LogisticsCategorySchema);

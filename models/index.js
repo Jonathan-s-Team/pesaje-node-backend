@@ -41,7 +41,7 @@ const PurchasePaymentMethod = require(`${purchaseModelsPath}/purchase-payment-me
 // Import logistics models
 const Logistics = require(`${logisticsModelsPath}/logistics`);
 const LogisticsItem = require(`${logisticsModelsPath}/logistics-item`);
-const LogisticsType = require(`${logisticsModelsPath}/logistics-type`);
+const LogisticsCategory = require(`${logisticsModelsPath}/logistics-category`);
 
 console.log(`Using ${dbType.toUpperCase()} Models`);
 
@@ -65,5 +65,5 @@ module.exports = {
     PurchasePaymentMethod,
     Logistics,
     LogisticsItem,
-    LogisticsType
+    LogisticsCategory
 };

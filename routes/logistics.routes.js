@@ -13,6 +13,7 @@ const {
 const router = Router();
 
 const { query } = require('express-validator');
+const LogisticsTypeEnum = require('../enums/logistics-type.enum');
 
 router.get(
     '/by-params',
@@ -42,8 +43,13 @@ router.post('/', [
     check('purchase', 'Purchase ID is required').isMongoId(),
     check('logisticsDate', 'Valid logisticsDate is required').isISO8601().toDate(),
     check('grandTotal', 'grandTotal must be a positive number').isFloat({ min: 0 }),
+    check('type')
+        .notEmpty()
+        .withMessage('Type is required')
+        .isIn(Object.values(LogisticsTypeEnum))
+        .withMessage(`type must be one of: ${Object.values(LogisticsTypeEnum).join(', ')}`),
     body('items').isArray({ min: 1 }).withMessage('Items must be an array with at least one element'),
-    body('items.*.logisticsType', 'Each item must have a valid logisticsType ID').isMongoId(),
+    body('items.*.logisticsCategory', 'Each item must have a valid logisticsCategory ID').isMongoId(),
     body('items.*.unit', 'Each item unit must be a positive number').isFloat({ min: 0 }),
     body('items.*.cost', 'Each item cost must be a positive number').isFloat({ min: 0 }),
     body('items.*.total', 'Each item total must be a positive number').isFloat({ min: 0 }),

@@ -2,10 +2,10 @@
 
 const bcrypt = require('bcryptjs');
 
-const { Option, Role, RolePermission, User, PaymentInfo, Person, Broker, Client, Size, Company, Period, SizePrice, ShrimpFarm, Purchase, PaymentMethod, PurchasePaymentMethod, Counter, LogisticsItem, Logistics, LogisticsType } = require('../models');
+const { Option, Role, RolePermission, User, PaymentInfo, Person, Broker, Client, Size, Company, Period, SizePrice, ShrimpFarm, Purchase, PaymentMethod, PurchasePaymentMethod, Counter, LogisticsItem, Logistics, LogisticsCategory } = require('../models');
 const Permission = require('../enums/permission.enum');
 const SizeTypeEnum = require('../enums/size-type.enum');
-const LogisticsTypeEnum = require('../enums/logistics-types.enum');
+const LogisticsCategoryEnum = require('../enums/logistics-category.enum');
 const { default: mongoose } = require('mongoose');
 
 
@@ -18,7 +18,7 @@ const seedDatabase = async (keepTxData = false) => {
     await seedCompanies();
     await seedSizes();
     await seedPaymentMethods();
-    await seedLogisticsTypes();
+    await seedLogisticsCategories();
 
     // Encriptar contraseña
     const salt = bcrypt.genSaltSync();
@@ -134,7 +134,7 @@ const cleanDatabase = async (keepTxData) => {
     await RolePermission.deleteMany({});
     await Company.deleteMany({});
     await PaymentMethod.deleteMany({});
-    await LogisticsType.deleteMany({});
+    await LogisticsCategory.deleteMany({});
     console.log('Cleaning completed');
 };
 
@@ -550,54 +550,54 @@ const seedPaymentMethods = async () => {
     }
 };
 
-const seedLogisticsTypes = async () => {
+const seedLogisticsCategories = async () => {
     try {
-        const fixedLogisticsTypes = [
+        const fixedLogisticsCategories = [
             {
                 _id: new mongoose.Types.ObjectId("60f9b7b2c8b3f10ffc2e5b01"),
                 name: "Trabajadores",
-                type: LogisticsTypeEnum.PERSONNEL,
+                category: LogisticsCategoryEnum.PERSONNEL,
             },
             {
                 _id: new mongoose.Types.ObjectId("60f9b7b2c8b3f10ffc2e5b02"),
                 name: "Responsable",
-                type: LogisticsTypeEnum.PERSONNEL,
+                category: LogisticsCategoryEnum.PERSONNEL,
             },
             {
                 _id: new mongoose.Types.ObjectId("60f9b7b2c8b3f10ffc2e5b03"),
                 name: "Responsable 2",
-                type: LogisticsTypeEnum.PERSONNEL,
+                category: LogisticsCategoryEnum.PERSONNEL,
             },
             {
                 _id: new mongoose.Types.ObjectId("60f9b7b2c8b3f10ffc2e5b04"),
                 name: "Carro",
-                type: LogisticsTypeEnum.INPUTS,
+                category: LogisticsCategoryEnum.INPUTS,
             },
             {
                 _id: new mongoose.Types.ObjectId("60f9b7b2c8b3f10ffc2e5b05"),
                 name: "Hielo",
-                type: LogisticsTypeEnum.INPUTS,
+                category: LogisticsCategoryEnum.INPUTS,
             },
             {
                 _id: new mongoose.Types.ObjectId("60f9b7b2c8b3f10ffc2e5b06"),
                 name: "Comida",
-                type: LogisticsTypeEnum.INPUTS,
+                category: LogisticsCategoryEnum.INPUTS,
             },
             {
                 _id: new mongoose.Types.ObjectId("60f9b7b2c8b3f10ffc2e5b07"),
                 name: "Otros",
-                type: LogisticsTypeEnum.INPUTS,
+                category: LogisticsCategoryEnum.INPUTS,
             },
         ];
 
         await Promise.all(
-            fixedLogisticsTypes.map(async (type) => {
-                const exists = await LogisticsType.findById(type._id);
+            fixedLogisticsCategories.map(async (cat) => {
+                const exists = await LogisticsCategory.findById(cat._id);
                 if (!exists) {
-                    await LogisticsType.create(type);
-                    console.log(`✅ Inserted logistics type: ${type.name}`);
+                    await LogisticsCategory.create(cat);
+                    console.log(`✅ Inserted logistics category: ${cat.name}`);
                 } else {
-                    console.log(`⚠️ Logistics type already exists: ${type.name}, skipping...`);
+                    console.log(`⚠️ Logistics category already exists: ${cat.name}, skipping...`);
                 }
             })
         );

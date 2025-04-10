@@ -1,6 +1,6 @@
 const LogisticsTypeEnum = Object.freeze({
-    PERSONNEL: "PERSONNEL",
-    INPUTS: "INPUTS",
+    SHIPMENT: "SHIPMENT",
+    LOCAL_PROCESSING: "LOCAL_PROCESSING",
 });
 
 module.exports = LogisticsTypeEnum;

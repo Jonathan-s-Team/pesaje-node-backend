@@ -11,8 +11,8 @@ const create = async (data) => {
         // Validate and create each LogisticsItem
         const createdItems = [];
         for (const item of data.items) {
-            const logisticsType = await dbAdapter.logisticsTypeAdapter.getById(item.logisticsType);
-            if (!logisticsType) throw new Error(`Invalid logisticsType: ${item.logisticsType}`);
+            const logisticsCategory = await dbAdapter.logisticsCategoryAdapter.getById(item.logisticsCategory);
+            if (!logisticsCategory) throw new Error(`Invalid logisticsCategory: ${item.logisticsCategory}`);
 
             const createdItem = await dbAdapter.logisticsItemAdapter.create(item, { session: transaction.session });
             createdItems.push(createdItem.id);
@@ -21,6 +21,7 @@ const create = async (data) => {
         // Create the Logistics document
         const logistics = await dbAdapter.logisticsAdapter.create({
             purchase: data.purchase,
+            type: data.type,
             logisticsDate: data.logisticsDate,
             grandTotal: data.grandTotal,
             items: createdItems
@@ -61,9 +62,6 @@ const getAllByParams = async ({ userId, controlNumber, includeDeleted = false })
 
     return await dbAdapter.logisticsAdapter.getAllWithRelations(logisticsQuery, []);
 };
-
-
-
 
 const getById = async (id) => {
     const logistics = await dbAdapter.logisticsAdapter.getByIdWithRelations(id, []);

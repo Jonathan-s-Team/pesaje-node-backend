@@ -1,7 +1,7 @@
 const { response } = require('express');
-const { getAll } = require('../services/logistics-type.service');
+const { getAll } = require('../services/logistics-category.service');
 
-const getLogisticsTypes = async (req, res = response) => {
+const getLogisticsCategories = async (req, res = response) => {
     try {
         const type = req.query.type || null;
 
@@ -19,5 +19,5 @@ const getLogisticsTypes = async (req, res = response) => {
 };
 
 module.exports = {
-    getLogisticsTypes
+    getLogisticsCategories
 }

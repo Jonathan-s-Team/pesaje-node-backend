@@ -1,9 +1,9 @@
 const { Schema, model } = require('mongoose');
 
 const LogisticsItemSchema = Schema({
-  logisticsType: {
+  logisticsCategory: {
     type: Schema.Types.ObjectId,
-    ref: 'LogisticsType',
+    ref: 'LogisticsCategory',
     required: true
   },
   unit: {

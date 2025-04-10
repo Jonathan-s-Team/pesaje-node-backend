@@ -41,7 +41,7 @@ app.use('/api/period', require('./routes/period-size-price.routes'));
 app.use('/api/purchase', require('./routes/purchase.routes'));
 app.use('/api/payment-method', require('./routes/payment-method.routes'));
 app.use('/api/purchase-payment-method', require('./routes/purchase-payment-method.routes'));
-app.use('/api/logistics-type', require('./routes/logistics-type.routes'));
+app.use('/api/logistics-category', require('./routes/logistics-category.routes'));
 app.use('/api/logistics', require('./routes/logistics.routes'));
 
 
