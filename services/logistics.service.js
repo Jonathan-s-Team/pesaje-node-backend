@@ -1,4 +1,5 @@
 const dbAdapter = require('../adapters');
+const LogisticsTypeEnum = require('../enums/logistics-type.enum');
 
 const create = async (data) => {
     const transaction = await dbAdapter.logisticsAdapter.startTransaction();
@@ -40,28 +41,61 @@ const create = async (data) => {
 const getAllByParams = async ({ userId, controlNumber, includeDeleted = false }) => {
     const logisticsQuery = includeDeleted ? {} : { deletedAt: null };
 
-    // If neither userId nor controlNumber is provided, just return all logistics
-    if (!userId && !controlNumber) {
-        // return await dbAdapter.logisticsAdapter.getAllWithRelations(logisticsQuery, [
-        //     { path: 'purchase', populate: { path: 'buyer' } },
-        //     { path: 'items', populate: { path: 'logisticsType' } }
-        // ]);
-        return await dbAdapter.logisticsAdapter.getAllWithRelations(logisticsQuery, []);
-    }
-
     const purchaseQuery = {};
     if (userId) purchaseQuery.buyer = userId;
     if (controlNumber) purchaseQuery.controlNumber = controlNumber;
 
-    const purchases = await dbAdapter.purchaseAdapter.getAll(purchaseQuery);
+    const purchases = Object.keys(purchaseQuery).length > 0
+        ? await dbAdapter.purchaseAdapter.getAllWithRelations(purchaseQuery, ['company'])
+        : await dbAdapter.purchaseAdapter.getAllWithRelations({}, ['company']);
+
+    const purchaseMap = purchases.reduce((acc, p) => {
+        acc[p.id] = {
+            controlNumber: p.controlNumber,
+            companyName: p.company?.name || ''
+        };
+        return acc;
+    }, {});
     const purchaseIds = purchases.map(p => p.id);
 
-    if (purchaseIds.length === 0) return [];
+    if (Object.keys(purchaseQuery).length > 0 && purchaseIds.length === 0) return [];
 
-    logisticsQuery.purchase = { $in: purchaseIds };
+    if (purchaseIds.length > 0) {
+        logisticsQuery.purchase = { $in: purchaseIds };
+    }
 
-    return await dbAdapter.logisticsAdapter.getAllWithRelations(logisticsQuery, []);
+    const logistics = await dbAdapter.logisticsAdapter.getAllWithRelations(logisticsQuery, [
+        { path: 'items', populate: { path: 'logisticsCategory' } }
+    ]);
+
+    return logistics.map(log => {
+        const purchaseInfo = purchaseMap[log.purchase];
+        const controlNumber = purchaseInfo?.controlNumber || null;
+        const companyName = purchaseInfo?.companyName || null;
+
+        // 🧠 Determine description
+        let description = '';
+
+        if (log.type === LogisticsTypeEnum.SHIPMENT) {
+            description = companyName === 'Local' ? 'Envío Local' : 'Envío a Compañia';
+        } else if (log.type === LogisticsTypeEnum.LOCAL_PROCESSING) {
+            description = 'Procesamiento Local';
+        }
+
+        return {
+            id: log.id,
+            logisticsDate: log.logisticsDate,
+            grandTotal: log.grandTotal,
+            purchase: log.purchase, // ID
+            items: log.items.map(i => i.id),
+            controlNumber,
+            description,
+            deletedAt: log.deletedAt || null,
+        };
+    });
 };
+
+
 
 const getById = async (id) => {
     const logistics = await dbAdapter.logisticsAdapter.getByIdWithRelations(id, []);
