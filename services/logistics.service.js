@@ -51,7 +51,7 @@ const getAllByParams = async ({ userId, controlNumber, includeDeleted = false })
 
     const purchaseQuery = {};
     if (userId) purchaseQuery.buyer = userId;
-    if (controlNumber) purchaseQuery.controlNumber = Number(controlNumber);
+    if (controlNumber) purchaseQuery.controlNumber = controlNumber;
 
     const purchases = await dbAdapter.purchaseAdapter.getAll(purchaseQuery);
     const purchaseIds = purchases.map(p => p.id);
