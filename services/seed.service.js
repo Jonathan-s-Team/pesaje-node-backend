@@ -2,7 +2,7 @@
 
 const bcrypt = require('bcryptjs');
 
-const { Option, Role, RolePermission, User, PaymentInfo, Person, Broker, Client, Size, Company, Period, SizePrice, ShrimpFarm, Purchase, PaymentMethod, PurchasePaymentMethod, Counter, LogisticsItem, Logistics, LogisticsCategory } = require('../models');
+const { Option, Role, RolePermission, User, PaymentInfo, Person, Broker, Client, Size, Company, Period, SizePrice, ShrimpFarm, Purchase, PaymentMethod, PurchasePaymentMethod, Counter, LogisticsItem, Logistics, LogisticsCategory, Sale, CompanySale, CompanySaleItem } = require('../models');
 const Permission = require('../enums/permission.enum');
 const SizeTypeEnum = require('../enums/size-type.enum');
 const LogisticsCategoryEnum = require('../enums/logistics-category.enum');
@@ -125,6 +125,10 @@ const cleanDatabase = async (keepTxData) => {
         await LogisticsItem.deleteMany({});
         await Logistics.deleteMany({});
     }
+
+    await Sale.deleteMany({});
+    await CompanySale.deleteMany({});
+    await CompanySaleItem.deleteMany({});
 
     await Size.deleteMany({});
     await Option.deleteMany({});

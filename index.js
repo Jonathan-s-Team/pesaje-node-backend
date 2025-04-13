@@ -43,6 +43,7 @@ app.use('/api/payment-method', require('./routes/payment-method.routes'));
 app.use('/api/purchase-payment-method', require('./routes/purchase-payment-method.routes'));
 app.use('/api/logistics-category', require('./routes/logistics-category.routes'));
 app.use('/api/logistics', require('./routes/logistics.routes'));
+app.use('/api/company-sale', require('./routes/company-sale.routes'));
 
 
 // Escuchar peticiones
