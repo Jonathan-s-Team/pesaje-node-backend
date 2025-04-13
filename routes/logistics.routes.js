@@ -67,7 +67,7 @@ router.put(
         check('logisticsDate', 'Logistics date must be a valid ISO date').optional().isISO8601(),
         check('grandTotal', 'grandTotal must be a number >= 0').optional().isFloat({ min: 0 }),
         body('items').optional().isArray({ min: 1 }),
-        body('items.*.logisticsType', 'Each item must have a valid logisticsType ID').isMongoId(),
+        body('items.*.logisticsCategory', 'Each item must have a valid logisticsType ID').isMongoId(),
         body('items.*.unit', 'Each item must have a numeric unit >= 0').isFloat({ min: 0 }),
         body('items.*.cost', 'Each item must have a numeric cost >= 0').isFloat({ min: 0 }),
         body('items.*.total', 'Each item must have a numeric total >= 0').isFloat({ min: 0 }),

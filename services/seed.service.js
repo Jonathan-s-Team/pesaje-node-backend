@@ -122,11 +122,9 @@ const cleanDatabase = async (keepTxData) => {
         await Counter.deleteMany({});
         await Purchase.deleteMany({});
         await PurchasePaymentMethod.deleteMany({});
+        await LogisticsItem.deleteMany({});
+        await Logistics.deleteMany({});
     }
-
-    await LogisticsItem.deleteMany({});
-    await Logistics.deleteMany({});
-
 
     await Size.deleteMany({});
     await Option.deleteMany({});
@@ -318,11 +316,12 @@ const seedPermissions = async () => {
                         break;
 
                     case 'Nueva Logística':
-                        if (role.name === 'Admin' || role.name === 'Secretaria') {
-                            actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
-                        } else if (role.name === 'Comprador') {
-                            actions = [Permission.VIEW, Permission.ADD];
-                        }
+                        // if (role.name === 'Admin' || role.name === 'Secretaria') {
+                        //     actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
+                        // } else if (role.name === 'Comprador') {
+                        //     actions = [Permission.VIEW, Permission.ADD];
+                        // }
+                        actions = [Permission.VIEW, Permission.EDIT, Permission.ADD, Permission.DELETE];
                         break;
 
                     case 'Logísticas Recientes':

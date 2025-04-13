@@ -95,13 +95,70 @@ const getAllByParams = async ({ userId, controlNumber, includeDeleted = false })
     });
 };
 
-
-
 const getById = async (id) => {
-    const logistics = await dbAdapter.logisticsAdapter.getByIdWithRelations(id, []);
+    const logistics = await dbAdapter.logisticsAdapter.getByIdWithRelations(id, [
+        {
+            path: 'items',
+            populate: { path: 'logisticsCategory' }
+        },
+        {
+            path: 'purchase',
+            populate: [
+                { path: 'buyer', populate: { path: 'person' } },
+                { path: 'broker', populate: { path: 'person' } },
+                { path: 'client', populate: { path: 'person' } },
+                { path: 'company' },
+                { path: 'shrimpFarm' }
+            ]
+        }
+    ]);
+
     if (!logistics) throw new Error('Logistics not found');
-    return logistics;
+
+    const { purchase, items, ...rest } = logistics;
+
+    const formatPerson = (user) => user?.person
+        ? { id: user._id, fullName: `${user.person.names} ${user.person.lastNames}`.trim() }
+        : { id: user?._id || null, fullName: null };
+
+    return {
+        ...rest,
+        purchase: {
+            id: purchase.id,
+            controlNumber: purchase.controlNumber,
+            purchaseDate: purchase.purchaseDate,
+            buyer: formatPerson(purchase.buyer),
+            broker: formatPerson(purchase.broker),
+            client: formatPerson(purchase.client),
+            company: purchase.company
+                ? { id: purchase.company._id, name: purchase.company.name }
+                : null,
+            shrimpFarm: purchase.shrimpFarm
+                ? {
+                    id: purchase.shrimpFarm._id,
+                    identifier: purchase.shrimpFarm.identifier,
+                    place: purchase.shrimpFarm.place
+                }
+                : null
+        },
+        items: items.map(item => ({
+            id: item.id,
+            unit: item.unit,
+            cost: item.cost,
+            total: item.total,
+            description: item.description,
+            deletedAt: item.deletedAt,
+            logisticsCategory: item.logisticsCategory
+                ? {
+                    id: item.logisticsCategory._id,
+                    name: item.logisticsCategory.name,
+                    category: item.logisticsCategory.category
+                }
+                : null
+        }))
+    };
 };
+
 
 const update = async (id, data) => {
     const transaction = await dbAdapter.logisticsAdapter.startTransaction();
@@ -119,8 +176,8 @@ const update = async (id, data) => {
         // 🔁 Create new LogisticsItems
         const newItemIds = [];
         for (const item of data.items) {
-            const logisticsType = await dbAdapter.logisticsTypeAdapter.getById(item.logisticsType);
-            if (!logisticsType) throw new Error(`Invalid logisticsType: ${item.logisticsType}`);
+            const logisticsCategory = await dbAdapter.logisticsCategoryAdapter.getById(item.logisticsCategory);
+            if (!logisticsCategory) throw new Error(`Invalid logisticsCategory: ${item.logisticsCategory}`);
 
             const newItem = await dbAdapter.logisticsItemAdapter.create(item, { session: transaction.session });
             newItemIds.push(newItem.id);
