@@ -26,6 +26,11 @@ const CompanySaleItemSchema = Schema({
     required: true,
     min: 0
   },
+  referencePrice: {
+    type: Number,
+    required: true,
+    min: 0
+  },
   total: {
     type: Number,
     required: true,
