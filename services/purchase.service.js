@@ -63,7 +63,8 @@ const getAllByParams = async ({ includeDeleted = false, clientId, userId, period
         shrimpFarm: p.shrimpFarm ? {
             id: p.shrimpFarm.id,
             identifier: p.shrimpFarm.identifier,
-            place: p.shrimpFarm.place
+            place: p.shrimpFarm.place,
+            transportationMethod: p.shrimpFarm.transportationMethod
         } : null
     }));
 };
