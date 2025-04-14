@@ -200,7 +200,7 @@ const seedOptions = async () => {
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f19"), name: 'Nueva Logística', route: '/logistics/new', parentName: 'Logística' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f20"), name: 'Logísticas Recientes', route: '/logistics/list', parentName: 'Logística' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f11"), name: 'Compañía', route: '/sales/company', parentName: 'Ventas' },
-            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f12"), name: 'Local', route: '/sales/local', parentName: 'Ventas' },
+            // { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f12"), name: 'Local', route: '/sales/local', parentName: 'Ventas' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f21"), name: 'Ventas Recientes', route: '/sales/list', parentName: 'Ventas' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f04"), name: 'Gestionar Usuarios', route: '/settings/users', parentName: 'Administración' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f18"), name: 'Gestionar Brokers', route: '/settings/brokers', parentName: 'Administración' },
@@ -348,13 +348,13 @@ const seedPermissions = async () => {
                             actions = [];
                         }
                         break;
-                    case 'Local':
-                        if (role.name === 'Admin' || role.name === 'Secretaria') {
-                            actions = [Permission.VIEW, Permission.EDIT, Permission.ADD, Permission.DELETE];
-                        } else if (role.name === 'Comprador') {
-                            actions = [];
-                        }
-                        break;
+                    // case 'Local':
+                    //     if (role.name === 'Admin' || role.name === 'Secretaria') {
+                    //         actions = [Permission.VIEW, Permission.EDIT, Permission.ADD, Permission.DELETE];
+                    //     } else if (role.name === 'Comprador') {
+                    //         actions = [];
+                    //     }
+                    //     break;
                     case 'Ventas Recientes':
                         if (role.name === 'Admin' || role.name === 'Secretaria') {
                             actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
