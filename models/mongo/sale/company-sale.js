@@ -68,7 +68,7 @@ const CompanySaleSchema = Schema({
     required: true,
     min: 0
   },
-  priceGrandTotal: {
+  grandTotal: {
     type: Number,
     required: true,
     min: 0

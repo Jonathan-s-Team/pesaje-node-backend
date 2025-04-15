@@ -29,7 +29,7 @@ router.post(
         check('processedPounds', 'Processed pounds is required').isNumeric(),
         check('performance', 'Performance is required').isNumeric(),
         check('poundsGrandTotal', 'Pounds grand total is required').isNumeric(),
-        check('priceGrandTotal', 'Price grand total is required').isNumeric(),
+        check('grandTotal', 'Price grand total is required').isNumeric(),
         check('percentageTotal', 'Percentage total is required').isNumeric(),
 
         // 🔹 Items array and subfields
