@@ -52,7 +52,8 @@ const getAllByParams = async ({ userId, controlNumber, includeDeleted = false })
     const purchaseMap = purchases.reduce((acc, p) => {
         acc[p.id] = {
             controlNumber: p.controlNumber,
-            companyName: p.company?.name || ''
+            companyName: p.company?.name || '',
+            totalPounds: p.totalPounds
         };
         return acc;
     }, {});
@@ -72,6 +73,7 @@ const getAllByParams = async ({ userId, controlNumber, includeDeleted = false })
         const purchaseInfo = purchaseMap[log.purchase];
         const controlNumber = purchaseInfo?.controlNumber || null;
         const companyName = purchaseInfo?.companyName || null;
+        const totalPounds = purchaseInfo?.totalPounds || 0;
 
         // 🧠 Determine description
         let description = '';
@@ -87,6 +89,7 @@ const getAllByParams = async ({ userId, controlNumber, includeDeleted = false })
             logisticsDate: log.logisticsDate,
             grandTotal: log.grandTotal,
             purchase: log.purchase, // ID
+            totalPounds,
             items: log.items.map(i => i.id),
             controlNumber,
             description,
