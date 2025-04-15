@@ -124,11 +124,10 @@ const cleanDatabase = async (keepTxData) => {
         await PurchasePaymentMethod.deleteMany({});
         await LogisticsItem.deleteMany({});
         await Logistics.deleteMany({});
+        await Sale.deleteMany({});
+        await CompanySale.deleteMany({});
+        await CompanySaleItem.deleteMany({});
     }
-
-    await Sale.deleteMany({});
-    await CompanySale.deleteMany({});
-    await CompanySaleItem.deleteMany({});
 
     await Size.deleteMany({});
     await Option.deleteMany({});
@@ -205,6 +204,7 @@ const seedOptions = async () => {
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f04"), name: 'Gestionar Usuarios', route: '/settings/users', parentName: 'Administración' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f18"), name: 'Gestionar Brokers', route: '/settings/brokers', parentName: 'Administración' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f17"), name: 'Gestionar Clientes', route: '/settings/clients', parentName: 'Administración' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f22"), name: 'Reporte Económico', route: '/reports/economic', parentName: 'Reportes' },
         ];
 
         // Fetch existing options in one query
@@ -369,6 +369,13 @@ const seedPermissions = async () => {
 
                     case 'Reportes':
                         actions = [Permission.VIEW];
+                        break;
+                    case 'Reporte Económico':
+                        if (role.name === 'Admin' || role.name === 'Secretaria') {
+                            actions = [Permission.VIEW];
+                        } else if (role.name === 'Comprador') {
+                            actions = [];
+                        }
                         break;
 
                     case 'Administración':
