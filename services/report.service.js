@@ -31,7 +31,15 @@ const getSummaryInfoByParams = async ({ includeDeleted = false, clientId, userId
         }),
         dbAdapter.purchasePaymentMethodAdapter.getAll({ purchase: purchase.id, deletedAt: null }),
         dbAdapter.saleAdapter.getAll({ purchase: purchase.id, deletedAt: null }),
-        dbAdapter.logisticsAdapter.getAllWithRelations({ purchase: purchase.id, deletedAt: null }, ['items']),
+        dbAdapter.logisticsAdapter.getAllWithRelations(
+            { purchase: purchase.id, deletedAt: null },
+            [
+                {
+                    path: 'items',
+                    populate: { path: 'logisticsCategory' } // <-- Important to access `.category`
+                }
+            ]
+        ),
         dbAdapter.companySaleAdapter.getAll({ sale: { $in: await dbAdapter.saleAdapter.getAll({ purchase: purchase.id }).then(sales => sales.map(s => s.id)) } })
     ]);
 
@@ -47,13 +55,14 @@ const getSummaryInfoByParams = async ({ includeDeleted = false, clientId, userId
     const logisticsRecord = logistics[0];
 
     const logisticsGrouped = logisticsRecord?.items.reduce((acc, item) => {
-        if (!item?.logisticsType) return acc;
-        const type = item.logisticsType.status;
-        acc[type] = (acc[type] || 0) + item.total;
+        if (!item?.logisticsCategory) return acc;
+
+        const category = item.logisticsCategory.category;
+        acc[category] = (acc[category] || 0) + item.total;
         return acc;
     }, {}) || {};
 
-    const grossProfit = (companySale?.priceGrandTotal || 0) - (logisticsGrouped.INPUTS || 0) - (logisticsGrouped.PERSONNEL || 0) - (purchase.totalAgreedToPay || 0);
+    const grossProfit = (companySale?.grandTotal || 0) - (logisticsGrouped.INPUTS || 0) - (logisticsGrouped.PERSONNEL || 0) - (purchase.totalAgreedToPay || 0);
 
     return {
         grossProfit,
@@ -76,7 +85,7 @@ const getSummaryInfoByParams = async ({ includeDeleted = false, clientId, userId
             price2: purchase.price2 || 0,
             pounds2: purchase.pounds2 || 0,
             totalPoundsPurchased: purchase.totalPounds || 0,
-            totalToPay: totalPaid,
+            totalToPay: purchase.grandTotal,
             totalAgreed: purchase.totalAgreedToPay || 0
         },
         sale: {
@@ -89,7 +98,7 @@ const getSummaryInfoByParams = async ({ includeDeleted = false, clientId, userId
             wholePoundsReceived: companySale?.wholeReceivedPounds || 0,
             trashPounds: companySale?.trashPounds || 0,
             performance: companySale?.performance || 0,
-            totalToReceive: companySale?.priceGrandTotal || 0
+            totalToReceive: companySale?.grandTotal || 0
         },
         logistics: {
             type: logisticsRecord?.type || '',
