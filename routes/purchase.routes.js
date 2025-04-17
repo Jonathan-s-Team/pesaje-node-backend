@@ -28,6 +28,7 @@ router.get(
             }),
         query('clientId').optional().isMongoId().withMessage('Client ID must be a valid MongoDB ObjectId'),
         query('userId').optional().isMongoId().withMessage('User ID must be a valid MongoDB ObjectId'),
+        query('companyId').optional().isMongoId().withMessage('Company ID must be a valid MongoDB ObjectId'),
         query('periodId').optional().isMongoId().withMessage('Period ID must be a valid MongoDB ObjectId'),
         query('controlNumber')
             .optional()

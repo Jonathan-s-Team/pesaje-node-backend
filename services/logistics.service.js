@@ -45,20 +45,41 @@ const getAllByParams = async ({ userId, controlNumber, includeDeleted = false })
     if (userId) purchaseQuery.buyer = userId;
     if (controlNumber) purchaseQuery.controlNumber = controlNumber;
 
+    // Populate buyer, client, company
     const purchases = Object.keys(purchaseQuery).length > 0
-        ? await dbAdapter.purchaseAdapter.getAllWithRelations(purchaseQuery, ['company'])
-        : await dbAdapter.purchaseAdapter.getAllWithRelations({}, ['company']);
+        ? await dbAdapter.purchaseAdapter.getAllWithRelations(purchaseQuery, ['buyer', 'client', 'company'])
+        : await dbAdapter.purchaseAdapter.getAllWithRelations({}, ['buyer', 'client', 'company']);
+
+    const personIds = new Set();
+    purchases.forEach(p => {
+        if (p.buyer?.person) personIds.add(p.buyer.person);
+        if (p.client?.person) personIds.add(p.client.person);
+    });
+
+    const persons = await dbAdapter.personAdapter.getAll({ _id: { $in: Array.from(personIds) } });
+    const personMap = persons.reduce((map, person) => {
+        map[person.id] = `${person.names} ${person.lastNames}`.trim();
+        return map;
+    }, {});
 
     const purchaseMap = purchases.reduce((acc, p) => {
         acc[p.id] = {
             controlNumber: p.controlNumber,
             companyName: p.company?.name || '',
-            totalPounds: p.totalPounds
+            totalPounds: p.totalPounds || 0,
+            buyer: p.buyer ? {
+                id: p.buyer.id,
+                fullName: personMap[p.buyer.person] || 'Desconocido'
+            } : null,
+            client: p.client ? {
+                id: p.client.id,
+                fullName: personMap[p.client.person] || 'Desconocido'
+            } : null
         };
         return acc;
     }, {});
-    const purchaseIds = purchases.map(p => p.id);
 
+    const purchaseIds = purchases.map(p => p.id);
     if (Object.keys(purchaseQuery).length > 0 && purchaseIds.length === 0) return [];
 
     if (purchaseIds.length > 0) {
@@ -77,7 +98,6 @@ const getAllByParams = async ({ userId, controlNumber, includeDeleted = false })
 
         // 🧠 Determine description
         let description = '';
-
         if (log.type === LogisticsTypeEnum.SHIPMENT) {
             description = companyName === 'Local' ? 'Envío Local' : 'Envío a Compañia';
         } else if (log.type === LogisticsTypeEnum.LOCAL_PROCESSING) {
@@ -88,15 +108,18 @@ const getAllByParams = async ({ userId, controlNumber, includeDeleted = false })
             id: log.id,
             logisticsDate: log.logisticsDate,
             grandTotal: log.grandTotal,
-            purchase: log.purchase, // ID
+            purchase: log.purchase, // still returning the ID
             totalPounds,
             items: log.items.map(i => i.id),
             controlNumber,
             description,
+            buyer: purchaseInfo?.buyer || null,
+            client: purchaseInfo?.client || null,
             deletedAt: log.deletedAt || null,
         };
     });
 };
+
 
 const getById = async (id) => {
     const logistics = await dbAdapter.logisticsAdapter.getByIdWithRelations(id, [

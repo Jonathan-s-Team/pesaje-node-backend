@@ -3,7 +3,7 @@ const { check, body } = require('express-validator');
 const { validateFields } = require('../middlewares/validate-fields');
 const { validateJWT } = require('../middlewares/validate-jwt');
 const {
-    createCompanySale,
+    createCompanySale, getCompanySaleById, getCompanySaleBySaleId,
 } = require('../controllers/company-sale.controller');
 const CompanySaleStyleEnum = require('../enums/company-sale-style.enum');
 
@@ -49,6 +49,26 @@ router.post(
         validateFields,
     ],
     createCompanySale
+);
+
+router.get(
+    '/:id',
+    [
+        validateJWT,
+        check('id', 'Invalid sale ID').isMongoId(),
+        validateFields
+    ],
+    getCompanySaleById
+);
+
+router.get(
+    '/by-sale/:saleId',
+    [
+        validateJWT,
+        check('saleId', 'Invalid Sale ID').isMongoId(),
+        validateFields
+    ],
+    getCompanySaleBySaleId
 );
 
 module.exports = router;

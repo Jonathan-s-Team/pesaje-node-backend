@@ -20,7 +20,6 @@ const CompanySaleSchema = Schema({
   },
   np: {
     type: String,
-    required: true
   },
   serialNumber: {
     type: Number,
@@ -60,7 +59,7 @@ const CompanySaleSchema = Schema({
   },
   items: [{
     type: Schema.Types.ObjectId,
-    ref: 'CompanySaleItemSchema',
+    ref: 'CompanySaleItem',
     required: true
   }],
   poundsGrandTotal: {

@@ -9,12 +9,13 @@ const {
 
 const getAllPurchasesByParams = async (req, res = response) => {
     try {
-        const { includeDeleted, clientId, userId, periodId, controlNumber } = req.query;
+        const { includeDeleted, clientId, userId, companyId, periodId, controlNumber } = req.query;
 
         const filters = {
             includeDeleted: includeDeleted === 'true',
             clientId,
             userId,
+            companyId,
             periodId,
             controlNumber
         };

@@ -1,11 +1,12 @@
 const dbAdapter = require('../adapters');
 const PurchaseStatusEnum = require('../enums/purchase-status.enum');
 
-const getAllByParams = async ({ includeDeleted = false, clientId, userId, periodId, controlNumber }) => {
+const getAllByParams = async ({ includeDeleted = false, clientId, userId, companyId, periodId, controlNumber }) => {
     // Build base query
     const query = includeDeleted ? {} : { deletedAt: null };
     if (clientId) query.client = clientId;
     if (userId) query.buyer = userId;
+    if (companyId) query.company = companyId;
     if (periodId) query.period = periodId;
     if (controlNumber) query.controlNumber = controlNumber;
 
@@ -15,7 +16,8 @@ const getAllByParams = async ({ includeDeleted = false, clientId, userId, period
         'broker',
         'client',
         'shrimpFarm',
-        'company'
+        'company',
+        'period',
     ]);
 
     // Collect person IDs from buyer, broker, client
@@ -65,6 +67,10 @@ const getAllByParams = async ({ includeDeleted = false, clientId, userId, period
             identifier: p.shrimpFarm.identifier,
             place: p.shrimpFarm.place,
             transportationMethod: p.shrimpFarm.transportationMethod
+        } : null,
+        period: p.period ? {
+            id: p.period.id,
+            name: p.period.name
         } : null
     }));
 };
