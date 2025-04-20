@@ -196,7 +196,7 @@ const seedOptions = async () => {
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f11"), name: 'Brokers', route: '/personal-profile/brokers', parentName: 'Perfil Personal' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f12"), name: 'Gestionar Compra', route: '/purchases/form', parentName: 'Compras' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f13"), name: 'Compras Recientes', route: '/purchases/list', parentName: 'Compras' },
-            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f14"), name: 'Nueva Logística', route: '/logistics/new', parentName: 'Logística' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f14"), name: 'Gestionar Logística', route: '/logistics/form', parentName: 'Logística' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f15"), name: 'Logísticas Recientes', route: '/logistics/list', parentName: 'Logística' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f16"), name: 'Compañía', route: '/sales/company', parentName: 'Ventas' },
             // { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f17"), name: 'Local', route: '/sales/local', parentName: 'Ventas' },
@@ -320,21 +320,22 @@ const seedPermissions = async () => {
                         actions = [Permission.VIEW];
                         break;
 
-                    case 'Nueva Logística':
+                    case 'Gestionar Logística':
+                        // if (role.name === 'Admin' || role.name === 'Secretaria') {
+                        //     actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
+                        // } else if (role.name === 'Comprador') {
+                        //     actions = [Permission.VIEW, Permission.ADD];
+                        // }
+                        actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
+                        break;
+
+                    case 'Logísticas Recientes':
                         // if (role.name === 'Admin' || role.name === 'Secretaria') {
                         //     actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
                         // } else if (role.name === 'Comprador') {
                         //     actions = [Permission.VIEW, Permission.ADD];
                         // }
                         actions = [Permission.VIEW, Permission.EDIT, Permission.ADD, Permission.DELETE];
-                        break;
-
-                    case 'Logísticas Recientes':
-                        if (role.name === 'Admin' || role.name === 'Secretaria') {
-                            actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
-                        } else if (role.name === 'Comprador') {
-                            actions = [Permission.VIEW, Permission.ADD];
-                        }
                         break;
 
                     case 'Ventas':

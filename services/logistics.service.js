@@ -107,6 +107,7 @@ const getAllByParams = async ({ userId, controlNumber, includeDeleted = false })
         return {
             id: log.id,
             logisticsDate: log.logisticsDate,
+            type: log.type,
             grandTotal: log.grandTotal,
             purchase: log.purchase, // still returning the ID
             totalPounds,
