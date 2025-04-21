@@ -3,12 +3,10 @@ const dbAdapter = require('../adapters');
 const getAllByParams = async ({ userId, controlNumber, includeDeleted = false }) => {
     const saleQuery = includeDeleted ? {} : { deletedAt: null };
 
-    // Build purchase sub-query if filters are provided
     const purchaseQuery = {};
     if (userId) purchaseQuery.buyer = userId;
     if (controlNumber) purchaseQuery.controlNumber = controlNumber;
 
-    // Fetch matching purchases with relations (includes buyer, client, company)
     const purchases = await dbAdapter.purchaseAdapter.getAllWithRelations(purchaseQuery, ['buyer', 'client', 'company']);
     const purchaseIds = purchases.map(p => p.id);
 
@@ -18,7 +16,6 @@ const getAllByParams = async ({ userId, controlNumber, includeDeleted = false })
         saleQuery.purchase = { $in: purchaseIds };
     }
 
-    // Fetch people (buyers and clients) for fullName resolution
     const personIds = purchases.flatMap(p => [
         p.buyer?.person,
         p.client?.person
@@ -30,7 +27,6 @@ const getAllByParams = async ({ userId, controlNumber, includeDeleted = false })
         return acc;
     }, {});
 
-    // Build purchase lookup with fullNames and company
     const purchaseMap = purchases.reduce((acc, p) => {
         acc[p.id] = {
             controlNumber: p.controlNumber,
@@ -41,19 +37,30 @@ const getAllByParams = async ({ userId, controlNumber, includeDeleted = false })
         return acc;
     }, {});
 
-    // Get sales with matching purchases
     const sales = await dbAdapter.saleAdapter.getAllWithRelations(saleQuery, ['purchase']);
-
-    // Get related company sales by sale IDs
     const saleIds = sales.map(s => s.id);
-    const companySales = await dbAdapter.companySaleAdapter.getAll({ sale: { $in: saleIds }, deletedAt: null });
 
+    const companySales = await dbAdapter.companySaleAdapter.getAll({ sale: { $in: saleIds }, deletedAt: null });
     const companySaleMap = companySales.reduce((acc, cs) => {
         acc[cs.sale.toString()] = cs;
         return acc;
     }, {});
+    const companySaleIds = companySales.map(cs => cs.id);
 
-    // Build final response
+    // 🧮 Get related payment methods
+    const payments = await dbAdapter.companySalePaymentMethodAdapter.getAll({
+        companySale: { $in: companySaleIds },
+        deletedAt: null
+    });
+
+    // 🧾 Map of totalPaid by companySaleId
+    const paymentMap = payments.reduce((map, payment) => {
+        const saleId = payment.companySale.toString();
+        map[saleId] = (map[saleId] || 0) + Number(payment.amount);
+        return map;
+    }, {});
+
+    // 📦 Final response
     return sales.map(sale => {
         const purchaseData = purchaseMap[sale.purchase?.id];
         const relatedCompanySale = companySaleMap[sale.id] || null;
@@ -64,6 +71,7 @@ const getAllByParams = async ({ userId, controlNumber, includeDeleted = false })
             type: sale.type,
             controlNumber: purchaseData?.controlNumber || null,
             total: relatedCompanySale?.grandTotal || 0,
+            totalPaid: paymentMap[relatedCompanySale?.id] || 0,
             status: relatedCompanySale?.status || null,
             buyer: purchaseData?.buyer || null,
             client: purchaseData?.client || null,
@@ -71,6 +79,7 @@ const getAllByParams = async ({ userId, controlNumber, includeDeleted = false })
         };
     });
 };
+
 
 const remove = async (id) => {
     const transaction = await dbAdapter.saleAdapter.startTransaction();

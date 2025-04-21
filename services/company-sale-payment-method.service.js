@@ -85,7 +85,10 @@ const updatePaymentMethod = async (id, data) => {
 };
 
 const getPaymentsByCompanySale = async (companySaleId) => {
-    const query = companySaleId ? { companySale: companySaleId } : {};
+    const query = {
+        ...(companySaleId && { companySale: companySaleId }),
+        deletedAt: null
+    };
     return await dbAdapter.companySalePaymentMethodAdapter.getAllWithRelations(query, ['paymentMethod']);
 };
 
@@ -98,8 +101,10 @@ const removePaymentMethod = async (id) => {
         const companySale = await dbAdapter.companySaleAdapter.getById(payment.companySale);
         if (!companySale) throw new Error('Associated CompanySale does not exist');
 
-        await dbAdapter.companySalePaymentMethodAdapter.update(id, { deletedAt: new Date() }, { session: transaction.session });
+        // ❌ Permanently delete payment method
+        await dbAdapter.companySalePaymentMethodAdapter.removePermanently(id);
 
+        // ✅ Get remaining active payments
         const remainingPayments = await dbAdapter.companySalePaymentMethodAdapter.getAll({
             companySale: payment.companySale,
             deletedAt: null
@@ -120,6 +125,7 @@ const removePaymentMethod = async (id) => {
         await transaction.end();
     }
 };
+
 
 module.exports = {
     createPaymentMethod,

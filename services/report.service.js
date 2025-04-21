@@ -16,53 +16,56 @@ const getSummaryInfoByParams = async ({ includeDeleted = false, clientId, userId
         'period'
     ]);
 
-    if (purchases.length === 0) return null;
-    const purchase = purchases[0];
+    // 🛑 Ensure purchase is not deleted
+    const purchase = purchases.find(p => !p.deletedAt);
+    if (!purchase) return null;
 
-    const [persons, payments, sales, logistics, companySales] = await Promise.all([
-        dbAdapter.personAdapter.getAll({
-            _id: {
-                $in: [
-                    purchase.buyer?.person,
-                    purchase.broker?.person,
-                    purchase.client?.person
-                ].filter(Boolean)
+    const saleDocs = await dbAdapter.saleAdapter.getAll({ purchase: purchase.id, deletedAt: null });
+    const sale = saleDocs[0];
+
+    const companySales = await dbAdapter.companySaleAdapter.getAll({
+        sale: { $in: saleDocs.map(s => s.id) },
+        deletedAt: null
+    });
+    const companySale = companySales.find(cs => !cs.deletedAt);
+
+    const logisticsList = await dbAdapter.logisticsAdapter.getAllWithRelations(
+        { purchase: purchase.id, deletedAt: null },
+        [
+            {
+                path: 'items',
+                populate: { path: 'logisticsCategory' }
             }
-        }),
-        dbAdapter.purchasePaymentMethodAdapter.getAll({ purchase: purchase.id, deletedAt: null }),
-        dbAdapter.saleAdapter.getAll({ purchase: purchase.id, deletedAt: null }),
-        dbAdapter.logisticsAdapter.getAllWithRelations(
-            { purchase: purchase.id, deletedAt: null },
-            [
-                {
-                    path: 'items',
-                    populate: { path: 'logisticsCategory' } // <-- Important to access `.category`
-                }
-            ]
-        ),
-        dbAdapter.companySaleAdapter.getAll({ sale: { $in: await dbAdapter.saleAdapter.getAll({ purchase: purchase.id }).then(sales => sales.map(s => s.id)) } })
-    ]);
+        ]
+    );
+    const logisticsRecord = logisticsList.find(l => !l.deletedAt);
+
+    const persons = await dbAdapter.personAdapter.getAll({
+        _id: [
+            purchase.buyer?.person,
+            purchase.broker?.person,
+            purchase.client?.person
+        ].filter(Boolean)
+    });
 
     const personMap = persons.reduce((map, p) => {
         map[p.id] = `${p.names} ${p.lastNames}`.trim();
         return map;
     }, {});
 
-    const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
-
-    const sale = sales[0];
-    const companySale = companySales[0];
-    const logisticsRecord = logistics[0];
+    const payments = await dbAdapter.purchasePaymentMethodAdapter.getAll({ purchase: purchase.id, deletedAt: null });
 
     const logisticsGrouped = logisticsRecord?.items.reduce((acc, item) => {
         if (!item?.logisticsCategory) return acc;
-
         const category = item.logisticsCategory.category;
         acc[category] = (acc[category] || 0) + item.total;
         return acc;
     }, {}) || {};
 
-    const grossProfit = (companySale?.grandTotal || 0) - (logisticsGrouped.INPUTS || 0) - (logisticsGrouped.PERSONNEL || 0) - (purchase.totalAgreedToPay || 0);
+    const grossProfit = (companySale?.grandTotal || 0)
+        - (logisticsGrouped.INPUTS || 0)
+        - (logisticsGrouped.PERSONNEL || 0)
+        - (purchase.totalAgreedToPay || 0);
 
     return {
         grossProfit,
@@ -109,6 +112,7 @@ const getSummaryInfoByParams = async ({ includeDeleted = false, clientId, userId
         }
     };
 };
+
 
 module.exports = {
     getSummaryInfoByParams

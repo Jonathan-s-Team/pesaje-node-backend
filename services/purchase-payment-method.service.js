@@ -84,9 +84,11 @@ const updatePaymentMethod = async (id, data) => {
     }
 };
 
-
 const getPaymentsByPurchase = async (purchaseId) => {
-    const query = purchaseId ? { purchase: purchaseId } : {};
+    const query = {
+        ...(purchaseId && { purchase: purchaseId }),
+        deletedAt: null
+    };
     return await dbAdapter.purchasePaymentMethodAdapter.getAllWithRelations(query, ['paymentMethod']);
 };
 
@@ -99,8 +101,10 @@ const removePaymentMethod = async (id) => {
         const purchase = await dbAdapter.purchaseAdapter.getById(payment.purchase);
         if (!purchase) throw new Error('Associated purchase does not exist');
 
-        await dbAdapter.purchasePaymentMethodAdapter.update(id, { deletedAt: new Date() }, { session: transaction.session });
+        // ❌ Permanently delete payment method
+        await dbAdapter.purchasePaymentMethodAdapter.removePermanently(id);
 
+        // ✅ Get remaining active payments
         const remainingPayments = await dbAdapter.purchasePaymentMethodAdapter.getAll({
             purchase: payment.purchase,
             deletedAt: null
