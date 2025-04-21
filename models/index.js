@@ -48,6 +48,7 @@ const LogisticsCategory = require(`${logisticsModelsPath}/logistics-category`);
 const Sale = require(`${saleModelsPath}/sale`);
 const CompanySale = require(`${saleModelsPath}/company-sale`);
 const CompanySaleItem = require(`${saleModelsPath}/company-sale-item`);
+const CompanySalePaymentMethod = require(`${saleModelsPath}/company-sale-payment-method`);
 
 console.log(`Using ${dbType.toUpperCase()} Models`);
 
@@ -75,4 +76,5 @@ module.exports = {
     Sale,
     CompanySale,
     CompanySaleItem,
+    CompanySalePaymentMethod,
 };

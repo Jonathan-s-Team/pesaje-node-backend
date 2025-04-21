@@ -140,10 +140,49 @@ const update = async (id, data) => {
 };
 
 const remove = async (id) => {
-    const purchase = await dbAdapter.purchaseAdapter.getById(id);
-    if (!purchase) throw new Error('Purchase not found');
+    const transaction = await dbAdapter.purchaseAdapter.startTransaction();
 
-    return await dbAdapter.purchaseAdapter.update(id, { deletedAt: new Date() });
+    try {
+        const purchase = await dbAdapter.purchaseAdapter.getById(id);
+        if (!purchase) throw new Error('Purchase not found');
+
+        const now = new Date();
+
+        // 🧾 Soft-delete the purchase
+        await dbAdapter.purchaseAdapter.update(id, { deletedAt: now }, { session: transaction.session });
+
+        // 🚛 Soft-delete related logistics
+        const logistics = await dbAdapter.logisticsAdapter.getAll({ purchase: id });
+        await Promise.all(
+            logistics.map(log =>
+                dbAdapter.logisticsAdapter.update(log.id, { deletedAt: now }, { session: transaction.session })
+            )
+        );
+
+        // 💰 Soft-delete related sales
+        const sales = await dbAdapter.saleAdapter.getAll({ purchase: id });
+        await Promise.all(
+            sales.map(async (sale) => {
+                await dbAdapter.saleAdapter.update(sale.id, { deletedAt: now }, { session: transaction.session });
+
+                // 🏢 Soft-delete associated company sale (if any)
+                const companySales = await dbAdapter.companySaleAdapter.getAll({ sale: sale.id });
+                await Promise.all(
+                    companySales.map(cs =>
+                        dbAdapter.companySaleAdapter.update(cs.id, { deletedAt: now }, { session: transaction.session })
+                    )
+                );
+            })
+        );
+
+        await transaction.commit();
+        return { id, deletedAt: now };
+    } catch (error) {
+        await transaction.rollback();
+        throw new Error(error.message);
+    } finally {
+        await transaction.end();
+    }
 };
 
 module.exports = {

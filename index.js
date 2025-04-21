@@ -45,6 +45,7 @@ app.use('/api/logistics-category', require('./routes/logistics-category.routes')
 app.use('/api/logistics', require('./routes/logistics.routes'));
 app.use('/api/sale', require('./routes/sale.routes'));
 app.use('/api/company-sale', require('./routes/company-sale.routes'));
+app.use('/api/company-sale-payment-method', require('./routes/company-sale-payment-method.routes'));
 app.use('/api/report', require('./routes/report.routes'));
 
 

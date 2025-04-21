@@ -1,6 +1,14 @@
 const dbAdapter = require('../adapters');
 const PurchaseStatusEnum = require('../enums/purchase-status.enum');
 
+const normalize = (num) => Math.round((Number(num) + Number.EPSILON) * 100) / 100;
+
+const determineStatus = (totalPaid, totalAgreedToPay) => {
+    if (totalPaid === 0) return PurchaseStatusEnum.DRAFT;
+    if (totalPaid >= totalAgreedToPay) return PurchaseStatusEnum.COMPLETED;
+    return PurchaseStatusEnum.IN_PROGRESS;
+};
+
 const createPaymentMethod = async (data) => {
     const transaction = await dbAdapter.purchasePaymentMethodAdapter.startTransaction();
     try {
@@ -112,14 +120,6 @@ const removePaymentMethod = async (id) => {
     } finally {
         await transaction.end();
     }
-};
-
-const normalize = (num) => Math.round((Number(num) + Number.EPSILON) * 100) / 100;
-
-const determineStatus = (totalPaid, totalAgreedToPay) => {
-    if (totalPaid === 0) return PurchaseStatusEnum.DRAFT;
-    if (totalPaid >= totalAgreedToPay) return PurchaseStatusEnum.COMPLETED;
-    return PurchaseStatusEnum.IN_PROGRESS;
 };
 
 module.exports = {

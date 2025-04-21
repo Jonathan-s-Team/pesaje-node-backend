@@ -8,7 +8,7 @@ const getAllByParams = async ({ userId, controlNumber, includeDeleted = false })
     if (userId) purchaseQuery.buyer = userId;
     if (controlNumber) purchaseQuery.controlNumber = controlNumber;
 
-    // Fetch matching purchases with relations (now includes 'company')
+    // Fetch matching purchases with relations (includes buyer, client, company)
     const purchases = await dbAdapter.purchaseAdapter.getAllWithRelations(purchaseQuery, ['buyer', 'client', 'company']);
     const purchaseIds = purchases.map(p => p.id);
 
@@ -64,6 +64,7 @@ const getAllByParams = async ({ userId, controlNumber, includeDeleted = false })
             type: sale.type,
             controlNumber: purchaseData?.controlNumber || null,
             total: relatedCompanySale?.grandTotal || 0,
+            status: relatedCompanySale?.status || null,
             buyer: purchaseData?.buyer || null,
             client: purchaseData?.client || null,
             company: purchaseData?.company || null,

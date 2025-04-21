@@ -1,5 +1,7 @@
 const { Schema, model } = require('mongoose');
 
+const CompanySaleStatusEnum = require('../../../enums/company-sale-status.enum');
+
 const CompanySaleSchema = Schema({
   sale: {
     type: Schema.Types.ObjectId,
@@ -76,6 +78,11 @@ const CompanySaleSchema = Schema({
     type: Number,
     required: true,
     min: 0
+  },
+  status: {
+    type: String,
+    enum: CompanySaleStatusEnum,
+    required: true,
   },
   deletedAt: {
     type: Date,

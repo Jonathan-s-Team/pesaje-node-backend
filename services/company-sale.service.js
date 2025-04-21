@@ -1,5 +1,8 @@
 const dbAdapter = require('../adapters');
+
 const SaleTypeEnum = require('../enums/sale-type.enum');
+const CompanySaleStatusEnum = require('../enums/company-sale-status.enum');
+
 
 const create = async (data) => {
     const transaction = await dbAdapter.saleAdapter.startTransaction();
@@ -26,6 +29,9 @@ const create = async (data) => {
             const createdItem = await dbAdapter.companySaleItemAdapter.create(item, { session: transaction.session });
             itemIds.push(createdItem.id);
         }
+
+        // Set initial status
+        companySaleData.status = CompanySaleStatusEnum.DRAFT;
 
         // Create CompanySale
         const companySale = await dbAdapter.companySaleAdapter.create({
