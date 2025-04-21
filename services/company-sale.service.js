@@ -167,8 +167,68 @@ const getBySaleId = async (saleId) => {
     };
 };
 
+const update = async (id, data) => {
+    const transaction = await dbAdapter.companySaleAdapter.startTransaction();
+
+    try {
+        const existingCompanySale = await dbAdapter.companySaleAdapter.getById(id);
+        if (!existingCompanySale) {
+            throw new Error('Company sale not found');
+        }
+
+        const saleId = existingCompanySale.sale;
+
+        // 🔸 Update the Sale's saleDate
+        await dbAdapter.saleAdapter.update(saleId, {
+            saleDate: data.saleDate
+        }, { session: transaction.session });
+
+        // 🔥 Remove old CompanySaleItems
+        for (const itemId of existingCompanySale.items) {
+            await dbAdapter.companySaleItemAdapter.removePermanently(itemId);
+        }
+
+        // 🆕 Create new CompanySaleItems
+        const newItemIds = [];
+        for (const item of data.items) {
+            const newItem = await dbAdapter.companySaleItemAdapter.create(item, { session: transaction.session });
+            newItemIds.push(newItem.id);
+        }
+
+        // ✏️ Update the CompanySale record
+        const updatedCompanySale = await dbAdapter.companySaleAdapter.update(id, {
+            document: data.document,
+            batch: data.batch,
+            provider: data.provider,
+            np: data.np || null,
+            serialNumber: data.serialNumber,
+            receptionDateTime: data.receptionDateTime,
+            settleDateTime: data.settleDateTime,
+            batchAverageGram: data.batchAverageGram,
+            wholeReceivedPounds: data.wholeReceivedPounds,
+            trashPounds: data.trashPounds,
+            netReceivedPounds: data.netReceivedPounds,
+            processedPounds: data.processedPounds,
+            performance: data.performance,
+            poundsGrandTotal: data.poundsGrandTotal,
+            grandTotal: data.grandTotal,
+            percentageTotal: data.percentageTotal,
+            items: newItemIds
+        }, { session: transaction.session });
+
+        await transaction.commit();
+        return updatedCompanySale;
+    } catch (error) {
+        await transaction.rollback();
+        throw new Error(error.message);
+    } finally {
+        await transaction.end();
+    }
+};
+
 module.exports = {
     create,
     getById,
     getBySaleId,
+    update,
 };

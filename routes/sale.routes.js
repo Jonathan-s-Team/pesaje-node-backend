@@ -3,7 +3,8 @@ const { check, body } = require('express-validator');
 const { validateFields } = require('../middlewares/validate-fields');
 const { validateJWT } = require('../middlewares/validate-jwt');
 const {
-    getSalesByParams
+    getSalesByParams,
+    deleteSale
 } = require('../controllers/sale.controller');
 
 const router = Router();
@@ -29,6 +30,12 @@ router.get(
         validateFields
     ],
     getSalesByParams
+);
+
+router.delete(
+    '/:id',
+    [validateJWT, check('id', 'Invalid Sale ID').isMongoId(), validateFields],
+    deleteSale
 );
 
 module.exports = router;

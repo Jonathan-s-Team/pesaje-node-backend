@@ -8,8 +8,8 @@ const getAllByParams = async ({ userId, controlNumber, includeDeleted = false })
     if (userId) purchaseQuery.buyer = userId;
     if (controlNumber) purchaseQuery.controlNumber = controlNumber;
 
-    // Fetch matching purchases with relations
-    const purchases = await dbAdapter.purchaseAdapter.getAllWithRelations(purchaseQuery, ['buyer', 'client']);
+    // Fetch matching purchases with relations (now includes 'company')
+    const purchases = await dbAdapter.purchaseAdapter.getAllWithRelations(purchaseQuery, ['buyer', 'client', 'company']);
     const purchaseIds = purchases.map(p => p.id);
 
     if ((userId || controlNumber) && purchaseIds.length === 0) return [];
@@ -30,12 +30,13 @@ const getAllByParams = async ({ userId, controlNumber, includeDeleted = false })
         return acc;
     }, {});
 
-    // Build purchase lookup with fullNames
+    // Build purchase lookup with fullNames and company
     const purchaseMap = purchases.reduce((acc, p) => {
         acc[p.id] = {
             controlNumber: p.controlNumber,
             buyer: p.buyer ? { id: p.buyer.id, fullName: personMap[p.buyer.person] || 'Unknown' } : null,
-            client: p.client ? { id: p.client.id, fullName: personMap[p.client.person] || 'Unknown' } : null
+            client: p.client ? { id: p.client.id, fullName: personMap[p.client.person] || 'Unknown' } : null,
+            company: p.company ? { id: p.company.id, name: p.company.name } : null,
         };
         return acc;
     }, {});
@@ -64,12 +65,46 @@ const getAllByParams = async ({ userId, controlNumber, includeDeleted = false })
             controlNumber: purchaseData?.controlNumber || null,
             total: relatedCompanySale?.grandTotal || 0,
             buyer: purchaseData?.buyer || null,
-            client: purchaseData?.client || null
+            client: purchaseData?.client || null,
+            company: purchaseData?.company || null,
         };
     });
 };
 
+const remove = async (id) => {
+    const transaction = await dbAdapter.saleAdapter.startTransaction();
+    try {
+        // Ensure the sale exists
+        const sale = await dbAdapter.saleAdapter.getById(id);
+        if (!sale) {
+            throw new Error('Sale not found');
+        }
+
+        const deletedAt = new Date();
+
+        // Soft delete the Sale
+        await dbAdapter.saleAdapter.update(id, { deletedAt }, { session: transaction.session });
+
+        // Find all related CompanySales
+        const companySales = await dbAdapter.companySaleAdapter.getAll({ sale: id });
+
+        // Soft delete each associated CompanySale
+        await Promise.all(companySales.map(cs =>
+            dbAdapter.companySaleAdapter.update(cs.id, { deletedAt }, { session: transaction.session })
+        ));
+
+        await transaction.commit();
+        return { id, deletedAt };
+    } catch (error) {
+        await transaction.rollback();
+        throw new Error(error.message);
+    } finally {
+        await transaction.end();
+    }
+};
+
 
 module.exports = {
-    getAllByParams
+    getAllByParams,
+    remove,
 };

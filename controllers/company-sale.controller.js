@@ -1,5 +1,5 @@
 const { response } = require('express');
-const { create, getById, getBySaleId } = require('../services/company-sale.service');
+const { create, getById, getBySaleId, update } = require('../services/company-sale.service');
 
 const createCompanySale = async (req, res = response) => {
     try {
@@ -30,8 +30,19 @@ const getCompanySaleBySaleId = async (req, res = response) => {
     }
 };
 
+const updateCompanySale = async (req, res = response) => {
+    try {
+        const { id } = req.params;
+        const updatedSale = await update(id, req.body);
+        res.json({ ok: true, message: 'Company sale updated successfully', data: updatedSale });
+    } catch (error) {
+        res.status(500).json({ ok: false, message: error.message });
+    }
+};
+
 module.exports = {
     createCompanySale,
     getCompanySaleById,
     getCompanySaleBySaleId,
+    updateCompanySale
 };

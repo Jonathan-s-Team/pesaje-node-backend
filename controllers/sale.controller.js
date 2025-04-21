@@ -15,6 +15,17 @@ const getSalesByParams = async (req, res = response) => {
     }
 };
 
+const deleteSale = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await saleService.remove(id);
+        res.json({ ok: true, message: 'Sale deleted successfully', data: result });
+    } catch (error) {
+        res.status(500).json({ ok: false, message: error.message });
+    }
+};
+
 module.exports = {
-    getSalesByParams
+    getSalesByParams,
+    deleteSale,
 };
