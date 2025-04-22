@@ -2,41 +2,27 @@ const { Schema, model } = require('mongoose');
 
 const SaleStyleEnum = require('../../../enums/sale-style.enum');
 
-const CompanySaleItemSchema = Schema({
+const LocalSaleDetailSchema = Schema({
   style: {
     type: String,
     enum: SaleStyleEnum,
     required: true,
   },
-  class: {
+  merchat: {
     type: String,
     required: true,
   },
-  size: {
-    type: String,
-    required: true,
-  },
-  pounds: {
+  items: [{
+    type: Schema.Types.ObjectId,
+    ref: 'LocalSaleDetailItem',
+    required: true
+  }],
+  grandTotal: {
     type: Number,
     required: true,
     min: 0
   },
-  price: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  referencePrice: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  total: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  percentage: {
+  poundsGrandTotal: {
     type: Number,
     required: true,
     min: 0
@@ -50,10 +36,10 @@ const CompanySaleItemSchema = Schema({
 );
 
 
-CompanySaleItemSchema.method('toJSON', function () {
+LocalSaleDetailSchema.method('toJSON', function () {
   const { __v, _id, createdAt, updatedAt, ...object } = this.toObject();
   object.id = _id;
   return object;
 });
 
-module.exports = model('CompanySaleItem', CompanySaleItemSchema);
+module.exports = model('LocalSaleDetail', LocalSaleDetailSchema);

@@ -5,7 +5,7 @@ const { validateJWT } = require('../middlewares/validate-jwt');
 const {
     createCompanySale, getCompanySaleById, getCompanySaleBySaleId, updateCompanySale,
 } = require('../controllers/company-sale.controller');
-const CompanySaleStyleEnum = require('../enums/company-sale-style.enum');
+const SaleStyleEnum = require('../enums/sale-style.enum');
 
 const router = Router();
 
@@ -37,8 +37,8 @@ router.post(
         check('items.*.style')
             .notEmpty()
             .withMessage('Style is required')
-            .isIn(Object.values(CompanySaleStyleEnum))
-            .withMessage(`Style must be one of: ${Object.values(CompanySaleStyleEnum).join(', ')}`),
+            .isIn(Object.values(SaleStyleEnum))
+            .withMessage(`Style must be one of: ${Object.values(SaleStyleEnum).join(', ')}`),
         check('items.*.class', 'Class is required').notEmpty(),
         check('items.*.size', 'Size is required').notEmpty(),
         check('items.*.pounds', 'Pounds must be a number').isNumeric(),

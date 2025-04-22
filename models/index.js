@@ -49,6 +49,9 @@ const Sale = require(`${saleModelsPath}/sale`);
 const CompanySale = require(`${saleModelsPath}/company-sale`);
 const CompanySaleItem = require(`${saleModelsPath}/company-sale-item`);
 const CompanySalePaymentMethod = require(`${saleModelsPath}/company-sale-payment-method`);
+const LocalSale = require(`${saleModelsPath}/local-sale`);
+const LocalSaleDetail = require(`${saleModelsPath}/local-sale-detail`);
+const LocalSaleDetailItem = require(`${saleModelsPath}/local-sale-detail-item`);
 
 console.log(`Using ${dbType.toUpperCase()} Models`);
 
@@ -77,4 +80,7 @@ module.exports = {
     CompanySale,
     CompanySaleItem,
     CompanySalePaymentMethod,
+    LocalSale,
+    LocalSaleDetail,
+    LocalSaleDetailItem,
 };

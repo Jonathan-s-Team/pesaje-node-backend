@@ -2,7 +2,7 @@
 
 const bcrypt = require('bcryptjs');
 
-const { Option, Role, RolePermission, User, PaymentInfo, Person, Broker, Client, Size, Company, Period, SizePrice, ShrimpFarm, Purchase, PaymentMethod, PurchasePaymentMethod, Counter, LogisticsItem, Logistics, LogisticsCategory, Sale, CompanySale, CompanySaleItem } = require('../models');
+const { Option, Role, RolePermission, User, PaymentInfo, Person, Broker, Client, Size, Company, Period, SizePrice, ShrimpFarm, Purchase, PaymentMethod, PurchasePaymentMethod, Counter, LogisticsItem, Logistics, LogisticsCategory, Sale, CompanySale, CompanySaleItem, LocalSale, LocalSaleDetail, LocalSaleDetailItem } = require('../models');
 const Permission = require('../enums/permission.enum');
 const SizeTypeEnum = require('../enums/size-type.enum');
 const LogisticsCategoryEnum = require('../enums/logistics-category.enum');
@@ -128,6 +128,9 @@ const cleanDatabase = async (keepTxData) => {
         await CompanySale.deleteMany({});
         await CompanySaleItem.deleteMany({});
     }
+    await LocalSale.deleteMany({});
+    await LocalSaleDetail.deleteMany({});
+    await LocalSaleDetailItem.deleteMany({});
 
     await Size.deleteMany({});
     await Option.deleteMany({});
@@ -199,7 +202,7 @@ const seedOptions = async () => {
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f14"), name: 'Gestionar Logística', route: '/logistics/form', parentName: 'Logística' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f15"), name: 'Logísticas Recientes', route: '/logistics/list', parentName: 'Logística' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f16"), name: 'Compañía', route: '/sales/company', parentName: 'Ventas' },
-            // { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f17"), name: 'Local', route: '/sales/local', parentName: 'Ventas' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f17"), name: 'Local', route: '/sales/local', parentName: 'Ventas' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f18"), name: 'Ventas Recientes', route: '/sales/list', parentName: 'Ventas' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f19"), name: 'Gestionar Usuarios', route: '/settings/users', parentName: 'Administración' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f20"), name: 'Gestionar Brokers', route: '/settings/brokers', parentName: 'Administración' },
@@ -349,13 +352,13 @@ const seedPermissions = async () => {
                             actions = [];
                         }
                         break;
-                    // case 'Local':
-                    //     if (role.name === 'Admin' || role.name === 'Secretaria') {
-                    //         actions = [Permission.VIEW, Permission.EDIT, Permission.ADD, Permission.DELETE];
-                    //     } else if (role.name === 'Comprador') {
-                    //         actions = [];
-                    //     }
-                    //     break;
+                    case 'Local':
+                        if (role.name === 'Admin' || role.name === 'Secretaria') {
+                            actions = [Permission.VIEW, Permission.EDIT, Permission.ADD, Permission.DELETE];
+                        } else if (role.name === 'Comprador') {
+                            actions = [];
+                        }
+                        break;
                     case 'Ventas Recientes':
                         if (role.name === 'Admin' || role.name === 'Secretaria') {
                             actions = [Permission.VIEW, Permission.EDIT, Permission.ADD, Permission.DELETE];
@@ -363,10 +366,6 @@ const seedPermissions = async () => {
                             actions = [Permission.VIEW, Permission.ADD];
                         }
                         break;
-
-                    // case 'Local':
-                    //     actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
-                    //     break;
 
                     case 'Reportes':
                         actions = [Permission.VIEW];
