@@ -40,42 +40,54 @@ const getAllByParams = async ({ userId, controlNumber, includeDeleted = false })
     const sales = await dbAdapter.saleAdapter.getAllWithRelations(saleQuery, ['purchase']);
     const saleIds = sales.map(s => s.id);
 
-    const companySales = await dbAdapter.companySaleAdapter.getAll({ sale: { $in: saleIds }, deletedAt: null });
+    const [companySales, localSales] = await Promise.all([
+        dbAdapter.companySaleAdapter.getAll({ sale: { $in: saleIds }, deletedAt: null }),
+        dbAdapter.localSaleAdapter.getAll({ sale: { $in: saleIds }, deletedAt: null })
+    ]);
+
     const companySaleMap = companySales.reduce((acc, cs) => {
         acc[cs.sale.toString()] = cs;
         return acc;
     }, {});
+
+    const localSaleMap = localSales.reduce((acc, ls) => {
+        acc[ls.sale.toString()] = ls;
+        return acc;
+    }, {});
+
     const companySaleIds = companySales.map(cs => cs.id);
 
-    // 🧮 Get related payment methods
     const payments = await dbAdapter.companySalePaymentMethodAdapter.getAll({
         companySale: { $in: companySaleIds },
         deletedAt: null
     });
 
-    // 🧾 Map of totalPaid by companySaleId
     const paymentMap = payments.reduce((map, payment) => {
         const saleId = payment.companySale.toString();
         map[saleId] = (map[saleId] || 0) + Number(payment.amount);
         return map;
     }, {});
 
-    // 📦 Final response
     return sales.map(sale => {
         const purchaseData = purchaseMap[sale.purchase?.id];
         const relatedCompanySale = companySaleMap[sale.id] || null;
+        const relatedLocalSale = localSaleMap[sale.id] || null;
+
+        const isCompany = relatedCompanySale !== null;
+        const relatedSale = isCompany ? relatedCompanySale : relatedLocalSale;
 
         return {
             id: sale.id,
             saleDate: sale.saleDate,
             type: sale.type,
             controlNumber: purchaseData?.controlNumber || null,
-            total: relatedCompanySale?.grandTotal || 0,
-            totalPaid: paymentMap[relatedCompanySale?.id] || 0,
-            status: relatedCompanySale?.status || null,
+            total: relatedSale?.grandTotal || 0,
+            totalPaid: isCompany ? paymentMap[relatedSale?.id] || 0 : null,
+            status: relatedSale?.status || null,
             buyer: purchaseData?.buyer || null,
             client: purchaseData?.client || null,
             company: purchaseData?.company || null,
+            isCompanySale: isCompany
         };
     });
 };
@@ -83,8 +95,8 @@ const getAllByParams = async ({ userId, controlNumber, includeDeleted = false })
 
 const remove = async (id) => {
     const transaction = await dbAdapter.saleAdapter.startTransaction();
+
     try {
-        // Ensure the sale exists
         const sale = await dbAdapter.saleAdapter.getById(id);
         if (!sale) {
             throw new Error('Sale not found');
@@ -92,16 +104,23 @@ const remove = async (id) => {
 
         const deletedAt = new Date();
 
-        // Soft delete the Sale
+        // 🔹 Soft delete the Sale
         await dbAdapter.saleAdapter.update(id, { deletedAt }, { session: transaction.session });
 
-        // Find all related CompanySales
-        const companySales = await dbAdapter.companySaleAdapter.getAll({ sale: id });
+        // 🔹 Determine sale type and delete associated record
+        if (sale.type === 'COMPANY') {
+            const companySales = await dbAdapter.companySaleAdapter.getAll({ sale: id });
+            await Promise.all(companySales.map(cs =>
+                dbAdapter.companySaleAdapter.update(cs.id, { deletedAt }, { session: transaction.session })
+            ));
+        }
 
-        // Soft delete each associated CompanySale
-        await Promise.all(companySales.map(cs =>
-            dbAdapter.companySaleAdapter.update(cs.id, { deletedAt }, { session: transaction.session })
-        ));
+        if (sale.type === 'LOCAL') {
+            const localSales = await dbAdapter.localSaleAdapter.getAll({ sale: id });
+            await Promise.all(localSales.map(ls =>
+                dbAdapter.localSaleAdapter.update(ls.id, { deletedAt }, { session: transaction.session })
+            ));
+        }
 
         await transaction.commit();
         return { id, deletedAt };
@@ -112,6 +131,7 @@ const remove = async (id) => {
         await transaction.end();
     }
 };
+
 
 
 module.exports = {

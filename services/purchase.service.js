@@ -159,7 +159,7 @@ const remove = async (id) => {
             )
         );
 
-        // 💰 Soft-delete related sales
+        // 💰 Soft-delete related sales and their respective type
         const sales = await dbAdapter.saleAdapter.getAll({ purchase: id });
         await Promise.all(
             sales.map(async (sale) => {
@@ -170,6 +170,14 @@ const remove = async (id) => {
                 await Promise.all(
                     companySales.map(cs =>
                         dbAdapter.companySaleAdapter.update(cs.id, { deletedAt: now }, { session: transaction.session })
+                    )
+                );
+
+                // 🏪 Soft-delete associated local sale (if any)
+                const localSales = await dbAdapter.localSaleAdapter.getAll({ sale: sale.id });
+                await Promise.all(
+                    localSales.map(ls =>
+                        dbAdapter.localSaleAdapter.update(ls.id, { deletedAt: now }, { session: transaction.session })
                     )
                 );
             })

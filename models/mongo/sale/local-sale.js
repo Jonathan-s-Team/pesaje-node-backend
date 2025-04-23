@@ -26,6 +26,11 @@ const LocalSaleSchema = Schema({
     type: Number,
     required: true,
   },
+  grandTotal: {
+    type: Number,
+    required: true,
+    min: 0
+  },
   seller: {
     type: String,
     required: true,
