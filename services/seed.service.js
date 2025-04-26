@@ -127,10 +127,10 @@ const cleanDatabase = async (keepTxData) => {
         await Sale.deleteMany({});
         await CompanySale.deleteMany({});
         await CompanySaleItem.deleteMany({});
+        await LocalSale.deleteMany({});
+        await LocalSaleDetail.deleteMany({});
+        await LocalSaleDetailItem.deleteMany({});
     }
-    await LocalSale.deleteMany({});
-    await LocalSaleDetail.deleteMany({});
-    await LocalSaleDetailItem.deleteMany({});
 
     await Size.deleteMany({});
     await Option.deleteMany({});
@@ -305,7 +305,7 @@ const seedPermissions = async () => {
 
                     case 'Gestionar Compra':
                         if (role.name === 'Admin' || role.name === 'Secretaria') {
-                            actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
+                            actions = [Permission.VIEW, Permission.EDIT, Permission.ADD, Permission.DELETE];
                         } else if (role.name === 'Comprador') {
                             actions = [Permission.VIEW, Permission.ADD];
                         }
@@ -333,12 +333,12 @@ const seedPermissions = async () => {
                         break;
 
                     case 'Logísticas Recientes':
-                        // if (role.name === 'Admin' || role.name === 'Secretaria') {
-                        //     actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
-                        // } else if (role.name === 'Comprador') {
-                        //     actions = [Permission.VIEW, Permission.ADD];
-                        // }
-                        actions = [Permission.VIEW, Permission.EDIT, Permission.ADD, Permission.DELETE];
+                        if (role.name === 'Admin' || role.name === 'Secretaria') {
+                            actions = [Permission.VIEW, Permission.EDIT, Permission.ADD, Permission.DELETE];
+                        } else if (role.name === 'Comprador') {
+                            actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
+                        }
+                        // actions = [Permission.VIEW, Permission.EDIT, Permission.ADD, Permission.DELETE];
                         break;
 
                     case 'Ventas':

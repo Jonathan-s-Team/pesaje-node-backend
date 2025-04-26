@@ -8,37 +8,11 @@ const getSummaryInfoByParams = async ({ includeDeleted = false, clientId, userId
     if (controlNumber) query.controlNumber = controlNumber;
 
     const purchases = await dbAdapter.purchaseAdapter.getAllWithRelations(query, [
-        'buyer',
-        'broker',
-        'client',
-        'shrimpFarm',
-        'company',
-        'period'
+        'buyer', 'broker', 'client', 'shrimpFarm', 'company', 'period'
     ]);
 
-    // 🛑 Ensure purchase is not deleted
     const purchase = purchases.find(p => !p.deletedAt);
     if (!purchase) return null;
-
-    const saleDocs = await dbAdapter.saleAdapter.getAll({ purchase: purchase.id, deletedAt: null });
-    const sale = saleDocs[0];
-
-    const companySales = await dbAdapter.companySaleAdapter.getAll({
-        sale: { $in: saleDocs.map(s => s.id) },
-        deletedAt: null
-    });
-    const companySale = companySales.find(cs => !cs.deletedAt);
-
-    const logisticsList = await dbAdapter.logisticsAdapter.getAllWithRelations(
-        { purchase: purchase.id, deletedAt: null },
-        [
-            {
-                path: 'items',
-                populate: { path: 'logisticsCategory' }
-            }
-        ]
-    );
-    const logisticsRecord = logisticsList.find(l => !l.deletedAt);
 
     const persons = await dbAdapter.personAdapter.getAll({
         _id: [
@@ -47,13 +21,29 @@ const getSummaryInfoByParams = async ({ includeDeleted = false, clientId, userId
             purchase.client?.person
         ].filter(Boolean)
     });
-
     const personMap = persons.reduce((map, p) => {
         map[p.id] = `${p.names} ${p.lastNames}`.trim();
         return map;
     }, {});
 
-    const payments = await dbAdapter.purchasePaymentMethodAdapter.getAll({ purchase: purchase.id, deletedAt: null });
+    const sales = await dbAdapter.saleAdapter.getAll({ purchase: purchase.id, deletedAt: null });
+    const sale = sales.find(s => !s.deletedAt);
+    if (!sale) return null;
+
+    const [companySales, localSales] = await Promise.all([
+        dbAdapter.companySaleAdapter.getAll({ sale: sale.id, deletedAt: null }),
+        dbAdapter.localSaleAdapter.getAll({ sale: sale.id, deletedAt: null })
+    ]);
+
+    const companySale = companySales.find(cs => !cs.deletedAt);
+    const localSale = localSales.find(ls => !ls.deletedAt);
+    const isCompany = !!companySale;
+console.log(localSale)
+    const logisticsList = await dbAdapter.logisticsAdapter.getAllWithRelations(
+        { purchase: purchase.id, deletedAt: null },
+        [{ path: 'items', populate: { path: 'logisticsCategory' } }]
+    );
+    const logisticsRecord = logisticsList.find(l => !l.deletedAt);
 
     const logisticsGrouped = logisticsRecord?.items.reduce((acc, item) => {
         if (!item?.logisticsCategory) return acc;
@@ -62,7 +52,7 @@ const getSummaryInfoByParams = async ({ includeDeleted = false, clientId, userId
         return acc;
     }, {}) || {};
 
-    const grossProfit = (companySale?.grandTotal || 0)
+    const grossProfit = ((isCompany ? companySale?.grandTotal : 0) || 0)
         - (logisticsGrouped.INPUTS || 0)
         - (logisticsGrouped.PERSONNEL || 0)
         - (purchase.totalAgreedToPay || 0);
@@ -91,7 +81,7 @@ const getSummaryInfoByParams = async ({ includeDeleted = false, clientId, userId
             totalToPay: purchase.grandTotal,
             totalAgreed: purchase.totalAgreedToPay || 0
         },
-        sale: {
+        sale: isCompany ? {
             saleDate: sale?.saleDate || '',
             receptionDate: companySale?.receptionDateTime || '',
             batch: companySale?.batch || '',
@@ -102,6 +92,14 @@ const getSummaryInfoByParams = async ({ includeDeleted = false, clientId, userId
             trashPounds: companySale?.trashPounds || 0,
             performance: companySale?.performance || 0,
             totalToReceive: companySale?.grandTotal || 0
+        } : {
+            saleDate: sale?.saleDate || '',
+            wholeTotalPounds: localSale?.wholeTotalPounds || 0,
+            tailTotalPounds: localSale?.tailTotalPounds || 0,
+            wholeRejectedPounds: localSale?.wholeRejectedPounds || 0,
+            trashPounds: localSale?.trashPounds || 0,
+            totalProcessedPounds: localSale?.totalProcessedPounds || 0,
+            totalToReceive: localSale?.grandTotal || 0
         },
         logistics: {
             type: logisticsRecord?.type || '',
@@ -109,7 +107,8 @@ const getSummaryInfoByParams = async ({ includeDeleted = false, clientId, userId
             personnelExpenses: logisticsGrouped.PERSONNEL || 0,
             productAndSupplyExpenses: logisticsGrouped.INPUTS || 0,
             totalToPay: (logisticsGrouped.PERSONNEL || 0) + (logisticsGrouped.INPUTS || 0)
-        }
+        },
+        isCompanySale: isCompany
     };
 };
 

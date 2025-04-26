@@ -76,13 +76,20 @@ const getAllByParams = async ({ userId, controlNumber, includeDeleted = false })
         const isCompany = relatedCompanySale !== null;
         const relatedSale = isCompany ? relatedCompanySale : relatedLocalSale;
 
+        const totalPaid = isCompany ? (paymentMap[relatedSale?.id] || 0) : null;
+        const grandTotal = relatedSale?.grandTotal || 0;
+        const paidPercentage = isCompany && grandTotal > 0
+            ? Math.round((totalPaid / grandTotal) * 10000) / 100 // rounded to 2 decimals
+            : null;
+
         return {
             id: sale.id,
             saleDate: sale.saleDate,
             type: sale.type,
             controlNumber: purchaseData?.controlNumber || null,
-            total: relatedSale?.grandTotal || 0,
-            totalPaid: isCompany ? paymentMap[relatedSale?.id] || 0 : null,
+            total: grandTotal,
+            totalPaid,
+            paidPercentage,
             status: relatedSale?.status || null,
             buyer: purchaseData?.buyer || null,
             client: purchaseData?.client || null,
@@ -91,6 +98,7 @@ const getAllByParams = async ({ userId, controlNumber, includeDeleted = false })
         };
     });
 };
+
 
 
 const remove = async (id) => {
