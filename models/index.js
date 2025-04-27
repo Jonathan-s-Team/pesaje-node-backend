@@ -9,6 +9,7 @@ const priceModelsPath = `./${dbType}/price`;
 const purchaseModelsPath = `./${dbType}/purchase`;
 const logisticsModelsPath = `./${dbType}/logistics`;
 const saleModelsPath = `./${dbType}/sale`;
+const reportModelsPath = `./${dbType}/report`;
 
 // Import control models
 const Counter = require(`${controlModelsPath}/counter`);
@@ -53,6 +54,9 @@ const LocalSale = require(`${saleModelsPath}/local-sale`);
 const LocalSaleDetail = require(`${saleModelsPath}/local-sale-detail`);
 const LocalSaleDetailItem = require(`${saleModelsPath}/local-sale-detail-item`);
 
+// Import report models
+const TotalReport = require(`${reportModelsPath}/total-report`);
+
 console.log(`Using ${dbType.toUpperCase()} Models`);
 
 module.exports = {
@@ -83,4 +87,5 @@ module.exports = {
     LocalSale,
     LocalSaleDetail,
     LocalSaleDetailItem,
+    TotalReport,
 };

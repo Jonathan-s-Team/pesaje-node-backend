@@ -124,7 +124,112 @@ const getEconomicReportByParams = async ({ includeDeleted = false, clientId, use
     };
 };
 
+const getTotalReportByParams = async ({ includeDeleted = false, clientId, userId, periodId, controlNumber }) => {
+    const query = includeDeleted ? {} : { deletedAt: null };
+    if (clientId) query.client = clientId;
+    if (userId) query.buyer = userId;
+    if (periodId) query.period = periodId;
+    if (controlNumber) query.controlNumber = controlNumber;
+
+    // Fetch purchase with relations
+    const purchases = await dbAdapter.purchaseAdapter.getAllWithRelations(query, [
+        'buyer', 'broker', 'client', 'shrimpFarm', 'company', 'period'
+    ]);
+    const purchase = purchases.find(p => !p.deletedAt);
+    if (!purchase) return null;
+
+    // Fetch persons for buyer, broker, client
+    const persons = await dbAdapter.personAdapter.getAll({
+        _id: [
+            purchase.buyer?.person,
+            purchase.broker?.person,
+            purchase.client?.person
+        ].filter(Boolean)
+    });
+    const personMap = persons.reduce((acc, p) => {
+        acc[p.id] = `${p.names} ${p.lastNames}`.trim();
+        return acc;
+    }, {});
+
+    // Fetch sale
+    const sales = await dbAdapter.saleAdapter.getAll({ purchase: purchase.id, deletedAt: null });
+    const sale = sales.find(s => !s.deletedAt);
+    if (!sale) return null;
+
+    // Fetch only CompanySale
+    const companySales = await dbAdapter.companySaleAdapter.getAll({ sale: sale.id, deletedAt: null });
+    const companySale = companySales.find(cs => !cs.deletedAt);
+    if (!companySale) return null;
+
+    // Fetch logistics
+    const logisticsList = await dbAdapter.logisticsAdapter.getAllWithRelations(
+        { purchase: purchase.id, deletedAt: null },
+        [{ path: 'items', populate: { path: 'logisticsCategory' } }]
+    );
+
+    const logisticsRecord = logisticsList.find(l => !l.deletedAt);
+    let logisticsData = null;
+    if (logisticsRecord) {
+        const grouped = logisticsRecord.items.reduce((acc, item) => {
+            if (!item?.logisticsCategory) return acc;
+            const category = item.logisticsCategory.category;
+            acc[category] = (acc[category] || 0) + item.total;
+            return acc;
+        }, {});
+
+        logisticsData = {
+            id: logisticsRecord.id,
+            type: logisticsRecord.type,
+            logisticsDate: logisticsRecord.logisticsDate,
+            personnelExpenses: grouped.PERSONNEL || 0,
+            productAndSupplyExpenses: grouped.INPUTS || 0,
+            totalToPay: (grouped.PERSONNEL || 0) + (grouped.INPUTS || 0)
+        };
+    }
+
+    return {
+        purchase: {
+            id: purchase.id,
+            clientName: personMap[purchase.client?.person] || '',
+            shrimpFarmLocation: purchase.shrimpFarm?.place || '',
+            shrimpFarm: purchase.shrimpFarm?.identifier || '',
+            responsibleBuyer: personMap[purchase.buyer?.person] || '',
+            controlNumber: purchase.controlNumber || '',
+            companyName: purchase.company?.name || '',
+            period: purchase.period?.name || '',
+            brokerName: personMap[purchase.broker?.person] || '',
+            purchaseDate: purchase.purchaseDate || '',
+            averageGram: purchase.averageGrams || 0,
+            price: purchase.price || 0,
+            pounds: purchase.pounds || 0,
+            averageGrams2: purchase.averageGrams2 || 0,
+            price2: purchase.price2 || 0,
+            pounds2: purchase.pounds2 || 0,
+            totalPoundsPurchased: purchase.totalPounds || 0,
+            totalToPay: purchase.grandTotal,
+            totalAgreed: purchase.totalAgreedToPay || 0
+        },
+        sale: {
+            saleDate: sale?.saleDate || '',
+            averageBatchGrams: companySale?.batchAverageGram || 0,
+            netPoundsReceived: companySale?.netReceivedPounds || 0,
+            wholePoundsReceived: companySale?.wholeReceivedPounds || 0,
+            trashPounds: companySale?.trashPounds || 0,
+            totalToReceive: companySale?.grandTotal || 0
+        },
+        logistics: logisticsData
+    };
+};
+
+const createTotalReport = async (data) => {
+    const totalReport = await dbAdapter.totalReportAdapter.create(data);
+    return totalReport;
+};
+
+
 
 module.exports = {
-    getEconomicReportByParams
+    getEconomicReportByParams,
+    getTotalReportByParams,
+    createTotalReport
 };
