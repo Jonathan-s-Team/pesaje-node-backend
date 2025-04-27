@@ -364,7 +364,7 @@ const seedPermissions = async () => {
                         if (role.name === 'Admin' || role.name === 'Secretaria') {
                             actions = [Permission.VIEW, Permission.EDIT, Permission.ADD, Permission.DELETE];
                         } else if (role.name === 'Comprador') {
-                            actions = [Permission.VIEW, Permission.ADD];
+                            actions = [Permission.VIEW];
                         }
                         break;
 
@@ -375,14 +375,14 @@ const seedPermissions = async () => {
                         if (role.name === 'Admin' || role.name === 'Secretaria') {
                             actions = [Permission.VIEW];
                         } else if (role.name === 'Comprador') {
-                            actions = [];
+                            actions = [Permission.VIEW];
                         }
                         break;
                     case 'Reporte Total':
                         if (role.name === 'Admin' || role.name === 'Secretaria') {
                             actions = [Permission.VIEW];
                         } else if (role.name === 'Comprador') {
-                            actions = [];
+                            actions = [Permission.VIEW];
                         }
                         break;
 
