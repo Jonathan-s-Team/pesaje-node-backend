@@ -1,6 +1,6 @@
 const dbAdapter = require('../adapters');
 
-const getSummaryInfoByParams = async ({ includeDeleted = false, clientId, userId, periodId, controlNumber }) => {
+const getEconomicReportByParams = async ({ includeDeleted = false, clientId, userId, periodId, controlNumber }) => {
     const query = includeDeleted ? {} : { deletedAt: null };
     if (clientId) query.client = clientId;
     if (userId) query.buyer = userId;
@@ -21,9 +21,9 @@ const getSummaryInfoByParams = async ({ includeDeleted = false, clientId, userId
             purchase.client?.person
         ].filter(Boolean)
     });
-    const personMap = persons.reduce((map, p) => {
-        map[p.id] = `${p.names} ${p.lastNames}`.trim();
-        return map;
+    const personMap = persons.reduce((acc, p) => {
+        acc[p.id] = `${p.names} ${p.lastNames}`.trim();
+        return acc;
     }, {});
 
     const sales = await dbAdapter.saleAdapter.getAll({ purchase: purchase.id, deletedAt: null });
@@ -38,23 +38,39 @@ const getSummaryInfoByParams = async ({ includeDeleted = false, clientId, userId
     const companySale = companySales.find(cs => !cs.deletedAt);
     const localSale = localSales.find(ls => !ls.deletedAt);
     const isCompany = !!companySale;
-console.log(localSale)
+
     const logisticsList = await dbAdapter.logisticsAdapter.getAllWithRelations(
         { purchase: purchase.id, deletedAt: null },
         [{ path: 'items', populate: { path: 'logisticsCategory' } }]
     );
-    const logisticsRecord = logisticsList.find(l => !l.deletedAt);
 
-    const logisticsGrouped = logisticsRecord?.items.reduce((acc, item) => {
-        if (!item?.logisticsCategory) return acc;
-        const category = item.logisticsCategory.category;
-        acc[category] = (acc[category] || 0) + item.total;
-        return acc;
-    }, {}) || {};
+    const logisticsProcessed = logisticsList
+        .filter(l => !l.deletedAt)
+        .map(log => {
+            const grouped = log.items.reduce((acc, item) => {
+                if (!item?.logisticsCategory) return acc;
+                const category = item.logisticsCategory.category;
+                acc[category] = (acc[category] || 0) + item.total;
+                return acc;
+            }, {});
+            return {
+                id: log.id,
+                type: log.type,
+                logisticsDate: log.logisticsDate,
+                personnelExpenses: grouped.PERSONNEL || 0,
+                productAndSupplyExpenses: grouped.INPUTS || 0,
+                totalToPay: (grouped.PERSONNEL || 0) + (grouped.INPUTS || 0)
+            };
+        });
 
-    const grossProfit = ((isCompany ? companySale?.grandTotal : 0) || 0)
-        - (logisticsGrouped.INPUTS || 0)
-        - (logisticsGrouped.PERSONNEL || 0)
+    // Calculate total logistics cost
+    const totalLogisticsCost = isCompany
+        ? (logisticsProcessed[0]?.totalToPay || 0)
+        : logisticsProcessed.reduce((sum, l) => sum + (l.totalToPay || 0), 0);
+
+    // Calculate grossProfit correctly depending on company or local
+    const grossProfit = ((isCompany ? companySale?.grandTotal : localSale?.grandTotal) || 0)
+        - totalLogisticsCost
         - (purchase.totalAgreedToPay || 0);
 
     return {
@@ -101,18 +117,14 @@ console.log(localSale)
             totalProcessedPounds: localSale?.totalProcessedPounds || 0,
             totalToReceive: localSale?.grandTotal || 0
         },
-        logistics: {
-            type: logisticsRecord?.type || '',
-            logisticsDate: logisticsRecord?.logisticsDate || '',
-            personnelExpenses: logisticsGrouped.PERSONNEL || 0,
-            productAndSupplyExpenses: logisticsGrouped.INPUTS || 0,
-            totalToPay: (logisticsGrouped.PERSONNEL || 0) + (logisticsGrouped.INPUTS || 0)
-        },
+        logistics: isCompany
+            ? (logisticsProcessed[0] || null) // Company: single logistics
+            : logisticsProcessed,             // Local: array of logistics
         isCompanySale: isCompany
     };
 };
 
 
 module.exports = {
-    getSummaryInfoByParams
+    getEconomicReportByParams
 };

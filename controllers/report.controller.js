@@ -1,7 +1,5 @@
 const { response } = require('express');
-const {
-    getSummaryInfoByParams,
-} = require('../services/report.service');
+const reportService = require('../services/report.service');
 
 const getEconomicReportByParams = async (req, res = response) => {
     try {
@@ -15,7 +13,7 @@ const getEconomicReportByParams = async (req, res = response) => {
             controlNumber
         };
 
-        const report = await getSummaryInfoByParams(filters);
+        const report = await reportService.getEconomicReportByParams(filters);
 
         res.json({ ok: true, data: report });
     } catch (error) {
