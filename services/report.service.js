@@ -1,4 +1,7 @@
 const dbAdapter = require('../adapters');
+const CompanySaleStatusEnum = require('../enums/company-sale-status.enum');
+const LogisticsStatusEnum = require('../enums/logistics-status.enum');
+const PurchaseStatusEnum = require('../enums/purchase-status.enum');
 
 const getEconomicReportByParams = async ({ includeDeleted = false, clientId, userId, periodId, controlNumber }) => {
     const query = includeDeleted ? {} : { deletedAt: null };
@@ -222,14 +225,63 @@ const getTotalReportByParams = async ({ includeDeleted = false, clientId, userId
 };
 
 const createTotalReport = async (data) => {
-    const totalReport = await dbAdapter.totalReportAdapter.create(data);
-    return totalReport;
+    const transaction = await dbAdapter.totalReportAdapter.startTransaction();
+
+    try {
+        const { purchaseId } = data;
+
+        // 📄 Create TotalReport
+        const totalReport = await dbAdapter.totalReportAdapter.create(data, { session: transaction.session });
+
+        // 🔍 Find and Update Purchase
+        const purchase = await dbAdapter.purchaseAdapter.getById(purchaseId);
+        if (!purchase) {
+            throw new Error('Purchase not found');
+        }
+        await dbAdapter.purchaseAdapter.update(purchaseId, { status: PurchaseStatusEnum.CLOSED }, { session: transaction.session });
+
+        // 🔍 Find Sale associated to Purchase
+        const saleList = await dbAdapter.saleAdapter.getAll({ purchase: purchaseId, deletedAt: null });
+        const sale = saleList[0];
+        if (!sale) {
+            throw new Error('Sale not found for purchase');
+        }
+
+        // 🔍 Find CompanySale (only CompanySale, ignore LocalSale)
+        const companySaleList = await dbAdapter.companySaleAdapter.getAll({ sale: sale.id, deletedAt: null });
+        const companySale = companySaleList[0];
+        if (companySale) {
+            await dbAdapter.companySaleAdapter.update(companySale.id, { status: CompanySaleStatusEnum.CLOSED }, { session: transaction.session });
+        }
+
+        // 🔍 Find Logistics associated to Purchase
+        const logisticsList = await dbAdapter.logisticsAdapter.getAll({ purchase: purchaseId, deletedAt: null });
+        await Promise.all(
+            logisticsList.map(logistics =>
+                dbAdapter.logisticsAdapter.update(logistics.id, { status: LogisticsStatusEnum.CLOSED }, { session: transaction.session })
+            )
+        );
+
+        await transaction.commit();
+        return totalReport;
+    } catch (error) {
+        await transaction.rollback();
+        throw new Error(error.message);
+    } finally {
+        await transaction.end();
+    }
 };
 
+const getRecordedTotalReportByControlNumber = async (controlNumber) => {
+    const reportList = await dbAdapter.totalReportAdapter.getAll({ controlNumber });
 
+    const report = reportList[0];
+    return report || null;
+};
 
 module.exports = {
     getEconomicReportByParams,
     getTotalReportByParams,
-    createTotalReport
+    createTotalReport,
+    getRecordedTotalReportByControlNumber
 };

@@ -1,6 +1,7 @@
 const { Schema, model } = require('mongoose');
 
 const LogisticsTypeEnum = require('../../../enums/logistics-type.enum');
+const LogisticsStatusEnum = require('../../../enums/logistics-status.enum');
 
 
 const LogisticsSchema = Schema({
@@ -28,6 +29,11 @@ const LogisticsSchema = Schema({
     ref: 'LogisticsItem',
     required: true
   }],
+  status: {
+    type: String,
+    enum: LogisticsStatusEnum,
+    required: false,
+  },
   deletedAt: {
     type: Date,
     default: null

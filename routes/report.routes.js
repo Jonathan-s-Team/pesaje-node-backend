@@ -6,7 +6,8 @@ const { validateJWT } = require('../middlewares/validate-jwt');
 const {
     getEconomicReportByParams,
     getTotalReportByParams,
-    createTotalReport
+    createTotalReport,
+    getRecordedTotalReportByControlNumber
 } = require('../controllers/report.controller');
 
 const router = express.Router();
@@ -65,6 +66,7 @@ router.post(
     [
         validateJWT,
         check('purchaseId', 'Purchase ID is required').isMongoId(),
+        check('controlNumber', 'Control Number is required').notEmpty(),
         check('responsibleBuyer', 'Responsible Buyer is required').notEmpty(),
         check('brokerName', 'Broker Name is required').notEmpty(),
         check('purchaseDate', 'Purchase Date is required').isISO8601(),
@@ -106,6 +108,16 @@ router.post(
         validateFields
     ],
     createTotalReport
+);
+
+router.get(
+    '/total/recorded',
+    [
+        validateJWT,
+        query('controlNumber', 'Control number is required').notEmpty(),
+        validateFields
+    ],
+    getRecordedTotalReportByControlNumber
 );
 
 module.exports = router;

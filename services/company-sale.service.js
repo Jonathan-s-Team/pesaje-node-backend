@@ -111,6 +111,7 @@ const getBySaleId = async (saleId) => {
         id: companySale.id,
         sale: companySale.sale,
         saleDate: sale.saleDate,
+        status: companySale.status,
         document: companySale.document,
         batch: companySale.batch,
         provider: companySale.provider,

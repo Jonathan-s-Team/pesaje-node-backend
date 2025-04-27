@@ -7,6 +7,7 @@ const TotalReportSchema = Schema({
         ref: 'Purchase',
         required: true
     },
+    controlNumber: { type: String, required: true, unique: true },
     responsibleBuyer: { type: String, required: true },
     brokerName: { type: String, required: true },
     purchaseDate: { type: String, required: true },

@@ -51,8 +51,27 @@ const createTotalReport = async (req, res = response) => {
     }
 };
 
+const getRecordedTotalReportByControlNumber = async (req, res = response) => {
+    try {
+        const { controlNumber } = req.query;
+
+        const report = await reportService.getRecordedTotalReportByControlNumber(controlNumber);
+
+        res.json({
+            ok: true,
+            data: report
+        });
+    } catch (error) {
+        res.status(500).json({
+            ok: false,
+            message: error.message
+        });
+    }
+};
+
 module.exports = {
     getEconomicReportByParams,
     getTotalReportByParams,
-    createTotalReport
+    createTotalReport,
+    getRecordedTotalReportByControlNumber
 };
