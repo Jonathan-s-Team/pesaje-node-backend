@@ -36,7 +36,7 @@ const loginUser = async (username, password) => {
 
         // Convert expiresIn to a Date object (current time + 1 hour)
         const expiresInDate = new Date(Date.now() + 60 * 60 * 1000);
-
+console.log('login goes here')
         return {
             authToken,
             refreshToken,
