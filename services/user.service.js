@@ -86,22 +86,45 @@ const getById = async (id) => {
     return safeUser;
 };
 
-
 const update = async (id, data) => {
-    let user = await dbAdapter.userAdapter.getById(id);
+    const user = await dbAdapter.userAdapter.getById(id);
     if (!user) {
         throw new Error('User not found');
     }
 
-    // Update Person details if present
+    // 👤 Update Person details if present
     if (data.person) {
         await dbAdapter.personAdapter.update(user.person, data.person);
-        delete data.person; // Prevent full person object update in user model
+        delete data.person;
     }
 
-    // Update user record
-    return await dbAdapter.userAdapter.update(id, data);
+    // 🔒 Handle password update if needed
+    if (data.password) {
+        const salt = bcrypt.genSaltSync();
+        data.password = bcrypt.hashSync(data.password, salt);
+    }
+
+    // ✅ Update user record
+    await dbAdapter.userAdapter.update(id, data);
+
+    // 🔁 Return user with populated person
+    const updatedUser = await dbAdapter.userAdapter.getByIdWithRelations(id, ['person']);
+
+    // Exclude password field
+    const { password, ...safeUser } = updatedUser;
+    return safeUser;
 };
+
+const updatePassword = async (id, newPassword) => {
+    const user = await dbAdapter.userAdapter.getById(id);
+    if (!user) throw new Error('User not found');
+
+    const salt = bcrypt.genSaltSync();
+    const hashedPassword = bcrypt.hashSync(newPassword, salt);
+
+    return await dbAdapter.userAdapter.update(id, { password: hashedPassword });
+};
+
 
 const remove = async (id) => {
     let user = await dbAdapter.userAdapter.getById(id);
@@ -119,4 +142,5 @@ module.exports = {
     getById,
     update,
     remove,
+    updatePassword,
 };

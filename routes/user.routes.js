@@ -4,7 +4,7 @@ const { Router } = require('express');
 const { check, query, param } = require('express-validator');
 const router = Router();
 
-const { createUser, getUsers, getUserById, updateUser, deleteUser } = require('../controllers/user.controller');
+const { createUser, getUsers, getUserById, updateUser, deleteUser, updateUserPassword } = require('../controllers/user.controller');
 const { validateFields } = require('../middlewares/validate-fields');
 const { validateJWT } = require('../middlewares/validate-jwt');
 
@@ -72,6 +72,7 @@ router.get('/',
     getUsers);
 
 router.get('/:id', validateJWT, getUserById);
+
 router.put(
     '/:id',
     [
@@ -110,6 +111,18 @@ router.put(
     ],
     updateUser
 );
+
+router.put(
+    '/:id/password',
+    [
+        validateJWT,
+        param('id').isMongoId().withMessage('Invalid User ID'),
+        check('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+        validateFields
+    ],
+    updateUserPassword
+);
+
 router.delete(
     '/:id',
     [

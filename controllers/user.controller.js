@@ -1,7 +1,7 @@
 const { response } = require('express');
 const { validationResult } = require('express-validator');
 
-const { create, getAll, getById, remove, update } = require('../services/user.service');
+const { create, getAll, getById, remove, updatePassword, update } = require('../services/user.service');
 
 
 const createUser = async (req, res = response) => {
@@ -74,6 +74,22 @@ const updateUser = async (req, res = response) => {
     }
 };
 
+const updateUserPassword = async (req, res = response) => {
+    try {
+        const { id } = req.params;
+        const { password } = req.body;
+
+        if (!password || password.length < 6) {
+            return res.status(400).json({ ok: false, message: 'Password must be at least 6 characters long' });
+        }
+
+        await updatePassword(id, password);
+        res.json({ ok: true, message: 'Password updated successfully' });
+    } catch (error) {
+        res.status(500).json({ ok: false, message: error.message });
+    }
+};
+
 const deleteUser = async (req, res = response) => {
     try {
         const { id } = req.params;
@@ -97,5 +113,6 @@ module.exports = {
     getUsers,
     getUserById,
     updateUser,
-    deleteUser
+    deleteUser,
+    updateUserPassword
 }
