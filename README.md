@@ -105,16 +105,26 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Trigger correct Render deploy
         run: |
+          RELEASE_NAME="${{ github.event.release.name }}"
+          
           if [ "${{ github.event.release.prerelease }}" = "true" ]; then
             echo "Pre-release detected. Deploying to QA backend..."
-            curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_QA }}"
+            curl -X POST \
+              -H "Content-Type: application/json" \
+              -d "{\"message\":\"Release: $RELEASE_NAME\"}" \
+              "${{ secrets.RENDER_DEPLOY_HOOK_QA }}"
           else
             echo "Full release. Deploying to Production backend..."
-            curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_PROD }}"
+            curl -X POST \
+              -H "Content-Type: application/json" \
+              -d "{\"message\":\"Release: $RELEASE_NAME\"}" \
+              "${{ secrets.RENDER_DEPLOY_HOOK_PROD }}"
           fi
+
 ```
 
 With this setup, all deployments are automated, controlled, and aligned with the frontend release strategy.
