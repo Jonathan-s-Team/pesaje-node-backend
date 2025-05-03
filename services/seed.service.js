@@ -8,8 +8,7 @@ const SizeTypeEnum = require('../enums/size-type.enum');
 const LogisticsCategoryEnum = require('../enums/logistics-category.enum');
 const { default: mongoose } = require('mongoose');
 
-
-const seedDatabase = async (keepTxData = false) => {
+const seedDatabase = async (keepTxData = true) => {
     await cleanDatabase(keepTxData);
 
     await seedOptions();

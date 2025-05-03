@@ -1,0 +1,14 @@
+name: Deploy Backend to Render QA
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger QA deploy on Render
+        run: curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_QA }}"

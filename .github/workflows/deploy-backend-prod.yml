@@ -1,0 +1,20 @@
+name: Deploy Backend to Render Production
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger correct Render deploy
+        run: |
+          if [ "${{ github.event.release.prerelease }}" = "true" ]; then
+            echo "Pre-release detected. Deploying to QA backend..."
+            curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_QA }}"
+          else
+            echo "Full release. Deploying to Production backend..."
+            curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_PROD }}"
+          fi
