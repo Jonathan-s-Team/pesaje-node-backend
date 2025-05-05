@@ -5,5 +5,5 @@ mongo/
 
 .env
 
-uploads/productos/**.*
-uploads/usuarios/**.*
+
+uploads/
