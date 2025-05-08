@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const bcrypt = require('bcryptjs');
 
 const dbAdapter = require('../adapters');
@@ -125,7 +127,6 @@ const updatePassword = async (id, newPassword) => {
     return await dbAdapter.userAdapter.update(id, { password: hashedPassword });
 };
 
-
 const remove = async (id) => {
     let user = await dbAdapter.userAdapter.getById(id);
     if (!user) {
@@ -136,6 +137,26 @@ const remove = async (id) => {
     return await dbAdapter.userAdapter.update(id, { deletedAt: new Date() });
 };
 
+const uploadPhoto = async (userId, file) => {
+    const user = await dbAdapter.userAdapter.getById(userId);
+    if (!user) throw new Error('User not found');
+
+    const personId = user.person;
+    if (!file || !file.filename) {
+        throw new Error('Photo file is required');
+    }
+
+    // Generate photo path using userId and preserve extension
+    const ext = path.extname(file.originalname);
+    const filename = `${userId}${ext}`;
+    const photoPath = `/people/${filename}`;
+
+    // Update the person document with photo path
+    await dbAdapter.personAdapter.update(personId, { photo: photoPath });
+
+    return photoPath;
+};
+
 module.exports = {
     create,
     getAll,
@@ -143,4 +164,5 @@ module.exports = {
     update,
     remove,
     updatePassword,
+    uploadPhoto,
 };

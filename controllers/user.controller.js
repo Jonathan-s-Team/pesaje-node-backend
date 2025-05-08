@@ -1,7 +1,7 @@
 const { response } = require('express');
 const { validationResult } = require('express-validator');
 
-const { create, getAll, getById, remove, updatePassword, update } = require('../services/user.service');
+const { create, getAll, getById, remove, updatePassword, update, uploadPhoto } = require('../services/user.service');
 
 
 const createUser = async (req, res = response) => {
@@ -108,11 +108,32 @@ const deleteUser = async (req, res = response) => {
     }
 };
 
+const uploadUserPhoto = async (req, res = response) => {
+    try {
+        const { id } = req.params;
+        const file = req.file;
+
+        const photoPath = await uploadPhoto(id, file);
+
+        res.status(200).json({
+            ok: true,
+            message: 'Photo uploaded successfully',
+            data: { photo: photoPath }
+        });
+    } catch (error) {
+        res.status(400).json({
+            ok: false,
+            message: error.message
+        });
+    }
+};
+
 module.exports = {
     createUser,
     getUsers,
     getUserById,
     updateUser,
     deleteUser,
-    updateUserPassword
+    updateUserPassword,
+    uploadUserPhoto
 }
