@@ -149,7 +149,7 @@ const uploadPhoto = async (userId, file) => {
     // Generate photo path using userId and preserve extension
     const ext = path.extname(file.originalname);
     const filename = `${userId}${ext}`;
-    const photoPath = `/uploads/people/${filename}`;
+    const photoPath = `/people/${filename}`;
 
     // Update the person document with photo path
     await dbAdapter.personAdapter.update(personId, { photo: photoPath });
