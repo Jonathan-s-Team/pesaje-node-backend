@@ -460,7 +460,11 @@ const seedCompanies = async () => {
         const fixedCompanies = [
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4a01"), name: "Edpacific" },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4a02"), name: "Prodex" },
-            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4a03"), name: "Local" }
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4a03"), name: "Local" },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4a04"), name: "Compañía 3" },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4a05"), name: "Compañía 4" },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4a06"), name: "Compañía 5" },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4a07"), name: "Compañía 6" },
         ];
 
         // Insert companies only if they do not exist
