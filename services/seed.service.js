@@ -182,7 +182,7 @@ const seedRoles = async () => {
 const seedOptions = async () => {
     try {
         const options = [
-            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f01"), name: 'Principal', route: '/home', icon: 'element-11' },
+            // { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f01"), name: 'Principal', route: '/home', icon: 'element-11' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f02"), name: 'Perfil Personal', icon: 'profile-circle' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f03"), name: 'Clientes', route: '/clients', icon: 'people' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f04"), name: 'Precios', route: '/prices', icon: 'price-tag' },
@@ -266,7 +266,7 @@ const seedPermissions = async () => {
                 let actions = [];
 
                 switch (option.name) {
-                    case 'Principal':
+                    // case 'Principal':
                     case 'Perfil Personal':
                         actions = [Permission.VIEW];
                         break;
