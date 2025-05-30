@@ -109,7 +109,7 @@ const update = async (id, data) => {
         const salt = bcrypt.genSaltSync();
         data.password = bcrypt.hashSync(data.password, salt);
     }
-    console.log(user)
+
     // ✅ Update user record
     await dbAdapter.userAdapter.update(id, data);
 
