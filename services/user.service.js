@@ -94,6 +94,10 @@ const update = async (id, data) => {
         throw new Error('User not found');
     }
 
+    if (!('deletedAt' in data)) {
+        data.deletedAt = null;
+    }
+
     // 👤 Update Person details if present
     if (data.person) {
         await dbAdapter.personAdapter.update(user.person, data.person);
