@@ -94,6 +94,10 @@ const update = async (id, data) => {
         throw new Error('User not found');
     }
 
+    if (!('deletedAt' in data)) {
+        data.deletedAt = null;
+    }
+
     // 👤 Update Person details if present
     if (data.person) {
         await dbAdapter.personAdapter.update(user.person, data.person);
@@ -105,7 +109,7 @@ const update = async (id, data) => {
         const salt = bcrypt.genSaltSync();
         data.password = bcrypt.hashSync(data.password, salt);
     }
-
+    console.log(user)
     // ✅ Update user record
     await dbAdapter.userAdapter.update(id, data);
 
