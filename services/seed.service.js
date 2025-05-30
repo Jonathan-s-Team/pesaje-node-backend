@@ -415,7 +415,7 @@ const seedPermissions = async () => {
 
                     case 'Gestionar Clientes':
                         if (role.name === 'Admin' || role.name === 'Secretaria') {
-                            actions = [Permission.VIEW, Permission.EDIT, Permission.ADD];
+                            actions = [Permission.VIEW, Permission.EDIT, Permission.ADD, Permission.DELETE];
                         } else if (role.name === 'Comprador') {
                             actions = [];
                         }

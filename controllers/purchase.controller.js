@@ -51,7 +51,11 @@ const createPurchase = async (req, res = response) => {
 
 const updatePurchase = async (req, res = response) => {
     try {
-        const updatedPurchase = await update(req.params.id, req.body);
+        const body = { ...req.body };
+        //se elimina el status para que no cambie por el status antiguo que le llega del gestionar compra
+        if (req.body.hasOwnProperty('status'))          
+            delete body.status;
+        const updatedPurchase = await update(req.params.id, body);
         res.json({ ok: true, data: updatedPurchase, message: 'Purchase updated successfully' });
     } catch (error) {
         res.status(500).json({ ok: false, message: error.message });
