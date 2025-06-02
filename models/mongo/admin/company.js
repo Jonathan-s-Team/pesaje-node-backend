@@ -8,6 +8,7 @@ const CompanySchema = Schema({
   },
   code: {
     type: String,
+    unique: true,
     required: true
   },
   city: {
@@ -173,6 +174,30 @@ const CompanySchema = Schema({
   { timestamps: true },
 );
 
+// 🔹 Auto-increment `code`
+CompanySchema.pre('save', async function (next) {
+  if (!this.code) {
+    try {
+      const Counter = require('../control/counter'); // Lazy import
+      const counterKey = 'Company-Code';
+
+      const counter = await Counter.findOneAndUpdate(
+        { model: counterKey },
+        { $inc: { seq: 100 } },
+        { new: true, upsert: true }
+      );
+
+      if (!counter) {
+        return next(new Error('Failed to generate company code.'));
+      }
+
+      this.code = `${counter.seq}`;
+    } catch (error) {
+      return next(error);
+    }
+  }
+  next();
+});
 
 CompanySchema.method('toJSON', function () {
   const { __v, _id, createdAt, updatedAt, ...object } = this.toObject();
