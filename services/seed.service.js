@@ -14,7 +14,7 @@ const seedDatabase = async (keepTxData = true) => {
     await seedOptions();
     const { adminRole, secretariaRole, compradorRole } = await seedRoles();
     await seedPermissions();
-    await seedCompanies();
+    // await seedCompanies(); // Gestión de compañías creado
     await seedSizes();
     await seedPaymentMethods();
     await seedLogisticsCategories();
@@ -129,13 +129,13 @@ const cleanDatabase = async (keepTxData) => {
         await LocalSale.deleteMany({});
         await LocalSaleDetail.deleteMany({});
         await LocalSaleDetailItem.deleteMany({});
+        await Company.deleteMany({});
     }
 
     await Size.deleteMany({});
     await Option.deleteMany({});
     await Role.deleteMany({});
     await RolePermission.deleteMany({});
-    await Company.deleteMany({});
     await PaymentMethod.deleteMany({});
     await LogisticsCategory.deleteMany({});
     console.log('Cleaning completed');
@@ -206,8 +206,9 @@ const seedOptions = async () => {
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f19"), name: 'Gestionar Usuarios', route: '/settings/users', parentName: 'Administración' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f20"), name: 'Gestionar Brokers', route: '/settings/brokers', parentName: 'Administración' },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f21"), name: 'Gestionar Clientes', route: '/settings/clients', parentName: 'Administración' },
-            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f22"), name: 'Reporte Económico', route: '/reports/economic', parentName: 'Reportes' },
-            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f23"), name: 'Reporte Total', route: '/reports/total', parentName: 'Reportes' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f22"), name: 'Gestionar Compañías', route: '/settings/companies', parentName: 'Administración' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f23"), name: 'Reporte Económico', route: '/reports/economic', parentName: 'Reportes' },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4f24"), name: 'Reporte Total', route: '/reports/total', parentName: 'Reportes' },
         ];
 
         // Fetch existing options in one query
@@ -420,6 +421,14 @@ const seedPermissions = async () => {
                             actions = [];
                         }
                         break;
+
+                    case 'Gestionar Compañías':
+                        if (role.name === 'Admin' || role.name === 'Secretaria') {
+                            actions = [Permission.VIEW, Permission.EDIT, Permission.ADD, Permission.DELETE];
+                        } else if (role.name === 'Comprador') {
+                            actions = [];
+                        }
+                        break;
                 }
 
                 if (actions.length > 0) {
@@ -461,10 +470,6 @@ const seedCompanies = async () => {
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4a01"), name: "Edpacific" },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4a02"), name: "Prodex" },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4a03"), name: "Local" },
-            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4a04"), name: "Compañía 3" },
-            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4a05"), name: "Compañía 4" },
-            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4a06"), name: "Compañía 5" },
-            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4a07"), name: "Compañía 6" },
         ];
 
         // Insert companies only if they do not exist

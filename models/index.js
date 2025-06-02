@@ -9,6 +9,7 @@ const priceModelsPath = `./${dbType}/price`;
 const purchaseModelsPath = `./${dbType}/purchase`;
 const logisticsModelsPath = `./${dbType}/logistics`;
 const saleModelsPath = `./${dbType}/sale`;
+const adminModelsPath = `./${dbType}/admin`;
 const reportModelsPath = `./${dbType}/report`;
 
 // Import control models
@@ -29,9 +30,8 @@ const PaymentInfo = require(`${profileModelsPath}/payment-info`);
 const Client = require(`${clientModelsPath}/client`);
 const ShrimpFarm = require(`${clientModelsPath}/shrimp-farm`);
 
-// Import client models
+// Import price models
 const Size = require(`${priceModelsPath}/size`);
-const Company = require(`${priceModelsPath}/company`);
 const Period = require(`${priceModelsPath}/period`);
 const SizePrice = require(`${priceModelsPath}/size-price`);
 
@@ -53,6 +53,9 @@ const CompanySalePaymentMethod = require(`${saleModelsPath}/company-sale-payment
 const LocalSale = require(`${saleModelsPath}/local-sale`);
 const LocalSaleDetail = require(`${saleModelsPath}/local-sale-detail`);
 const LocalSaleDetailItem = require(`${saleModelsPath}/local-sale-detail-item`);
+
+// Import admin models
+const Company = require(`${adminModelsPath}/company`);
 
 // Import report models
 const TotalReport = require(`${reportModelsPath}/total-report`);
