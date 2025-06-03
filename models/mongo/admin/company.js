@@ -9,7 +9,6 @@ const CompanySchema = Schema({
   code: {
     type: String,
     unique: true,
-    required: true
   },
   city: {
     type: String,
@@ -169,6 +168,10 @@ const CompanySchema = Schema({
   },
   observation4: {
     type: String,
+  },
+  deletedAt: {
+    type: Date,
+    default: null
   }
 },
   { timestamps: true },
