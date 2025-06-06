@@ -46,7 +46,7 @@ router.put(
         check('city', 'City cannot be empty').optional().notEmpty(),
         check('mainPersonName', 'Main person name cannot be empty').optional().notEmpty(),
         check('mainTelephone', 'Main telephone cannot be empty').optional().notEmpty(),
-        body('code').not().exists().withMessage('Code cannot be updated'),
+        // body('code').not().exists().withMessage('Code cannot be updated'),
         // Add more fields as needed
         validateFields
     ],
