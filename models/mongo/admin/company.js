@@ -187,8 +187,14 @@ CompanySchema.pre('save', async function (next) {
       const counter = await Counter.findOneAndUpdate(
         { model: counterKey },
         { $inc: { seq: 100 } },
-        { new: true, upsert: true }
+        { new: true, upsert: true, setDefaultsOnInsert: true }
       );
+
+      // If this is the first time, set seq to 101 instead of 100
+      if (counter.seq === 100) {
+        counter.seq = 101;
+        await counter.save();
+      }
 
       if (!counter) {
         return next(new Error('Failed to generate company code.'));
