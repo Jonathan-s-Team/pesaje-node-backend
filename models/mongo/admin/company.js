@@ -10,11 +10,11 @@ const CompanySchema = Schema({
     type: String,
     unique: true,
   },
-  city: {
+  address: {
     type: String,
     required: true
   },
-  mainPersonName: {
+  city: {
     type: String,
     required: true
   },
@@ -24,6 +24,11 @@ const CompanySchema = Schema({
   },
   invoiceEmail: {
     type: String,
+  },
+
+  mainPersonName: {
+    type: String,
+    required: true
   },
   managerName: {
     type: String,
@@ -55,6 +60,7 @@ const CompanySchema = Schema({
   aditionalStaffEmail: {
     type: String,
   },
+
   priceListByEmail: {
     type: Boolean,
   },
@@ -90,6 +96,7 @@ const CompanySchema = Schema({
       type: Number,
     }
   },
+
   paymentMethod1: {
     type: String, // e.g., "transfer", "cash", "credit"
   },
@@ -123,6 +130,7 @@ const CompanySchema = Schema({
   paymentReliabilityPercent: {
     type: Number, // e.g., 90 for 90% reliable
   },
+
   logisticsShippingAvailable: {
     type: Boolean, // true = yes, false = no
   },
@@ -150,6 +158,7 @@ const CompanySchema = Schema({
   extraInformation: {
     type: String,
   },
+
   classificationQuality: {
     type: String, // e.g., "BAD", "GOOD", "EXCELLENT"
     enum: ['BAD', 'GOOD', 'EXCELLENT'], // optional constraint
@@ -169,6 +178,7 @@ const CompanySchema = Schema({
   observation4: {
     type: String,
   },
+
   deletedAt: {
     type: Date,
     default: null
