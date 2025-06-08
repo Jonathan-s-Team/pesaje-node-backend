@@ -542,6 +542,10 @@ const seedSizes = async () => {
             { _id: new mongoose.Types.ObjectId("60f9a7b2c8b3f10ffc2e4b31"), size: "71/90", type: SizeTypeEnum['TAIL-B'] },
             { _id: new mongoose.Types.ObjectId("60f9a7b2c8b3f10ffc2e4b32"), size: "91/110", type: SizeTypeEnum['TAIL-B'] },
             { _id: new mongoose.Types.ObjectId("60f9a7b2c8b3f10ffc2e4b33"), size: "110/130", type: SizeTypeEnum['TAIL-B'] },
+
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b34"), size: "BR Large", type: SizeTypeEnum.RESIDUAL },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b35"), size: "BR Medium", type: SizeTypeEnum.RESIDUAL },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b36"), size: "BR Small", type: SizeTypeEnum.RESIDUAL },
         ];
 
         // Insert only if the size does not exist
