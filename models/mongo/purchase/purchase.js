@@ -127,7 +127,7 @@ PurchaseSchema.pre('save', async function (next) {
   if (!this.controlNumber) {
     try {
       const Counter = require('../control/counter'); // Lazy import
-      const Company = require('../price/company'); // Lazy import of Company model
+      const Company = require('../admin/company'); // Lazy import of Company model
 
       const company = await Company.findById(this.company);
       if (!company) {
