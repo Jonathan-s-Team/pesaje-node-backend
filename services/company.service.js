@@ -39,6 +39,8 @@ const remove = async (id) => {
     return await dbAdapter.companyAdapter.update(id, { deletedAt: new Date() });
 };
 
+
+
 module.exports = {
     getAll,
     getById,

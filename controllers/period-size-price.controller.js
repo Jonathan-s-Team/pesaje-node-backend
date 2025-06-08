@@ -1,5 +1,5 @@
 const { response } = require('express');
-const { getById, getAllByCompany, create, update, remove } = require('../services/period-size-price.service');
+const { getById, getAllByCompany, create, update, remove, getAllDistinctPeriodNamesSorted, getPricesByCompanyForPeriodName } = require('../services/period-size-price.service');
 
 const getPeriodById = async (req, res = response) => {
     try {
@@ -52,12 +52,32 @@ const updatePeriod = async (req, res = response) => {
     }
 };
 
-
-
 const removePeriod = async (req, res) => {
     try {
         const result = await remove(req.params.id);
         res.json({ ok: true, message: result.message });
+    } catch (error) {
+        res.status(500).json({ ok: false, message: error.message });
+    }
+};
+
+const getAllDistinctPeriodNames = async (req, res = response) => {
+    try {
+        const names = await getAllDistinctPeriodNamesSorted();
+        res.json({ ok: true, data: names });
+    } catch (error) {
+        res.status(500).json({ ok: false, message: error.message });
+    }
+};
+
+const getAllPricesByCompanyForPeriodName = async (req, res = response) => {
+    try {
+        const { periodName } = req.query;
+        if (!periodName) {
+            return res.status(400).json({ ok: false, message: 'periodName is required' });
+        }
+        const result = await getPricesByCompanyForPeriodName(periodName);
+        res.json({ ok: true, data: result });
     } catch (error) {
         res.status(500).json({ ok: false, message: error.message });
     }
@@ -68,5 +88,7 @@ module.exports = {
     getAllPeriodsByCompany,
     createPeriod,
     updatePeriod,
-    removePeriod
+    removePeriod,
+    getAllDistinctPeriodNames,
+    getAllPricesByCompanyForPeriodName
 };
