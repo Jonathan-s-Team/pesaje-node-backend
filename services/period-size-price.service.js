@@ -32,6 +32,20 @@ const getAllByCompany = async (companyId) => {
     return periods;
 };
 
+const getAllDistinctPeriodNamesSorted = async () => {
+    // Get all periods
+    const periods = await dbAdapter.periodAdapter.getAll({});
+    // Extract unique names
+    const uniqueNames = [...new Set(periods.map(p => p.name))];
+    // Sort by year, then month (names are in format number/year)
+    uniqueNames.sort((a, b) => {
+        const [monthA, yearA] = a.split('/').map(Number);
+        const [monthB, yearB] = b.split('/').map(Number);
+        return yearA - yearB || monthA - monthB;
+    });
+    return uniqueNames;
+};
+
 const create = async (data) => {
     // ✅ Validate `sizePrices` BEFORE starting the transaction
     if (data.sizePrices && !Array.isArray(data.sizePrices)) {
@@ -182,9 +196,6 @@ const update = async (periodId, data) => {
     }
 };
 
-
-
-
 const remove = async (id) => {
     const period = await dbAdapter.periodAdapter.getById(id);
     if (!period) {
@@ -197,10 +208,101 @@ const remove = async (id) => {
     return { message: 'Period deleted successfully' };
 };
 
+/**
+ * Returns prices grouped by Size type, then for each type a list of companies with their sizes and prices for that type.
+ * Output: [{ type, companies: [{ company: {id, name}, sizePrices: [{ size: {id, name}, price }] }] }]
+ */
+const getPricesByCompanyForPeriodName = async (periodName) => {
+    // Get all periods with the given name
+    const periods = await dbAdapter.periodAdapter.getAll({ name: periodName });
+    if (!periods.length) return [];
+
+    // Get all companies referenced by these periods
+    const companyIds = periods.map(p => p.company);
+    const companies = await dbAdapter.companyAdapter.getAll({ _id: { $in: companyIds } });
+    const companyMap = {};
+    companies.forEach(c => { companyMap[String(c.id)] = c; });
+
+    // For each period, get its sizePrices (with size populated, including type)
+    const allCompanySizePrices = await Promise.all(periods.map(async period => {
+        const sizePrices = await dbAdapter.sizePriceAdapter.getAllWithRelations(
+            { period: period.id },
+            ['size']
+        );
+        return {
+            company: companyMap[String(period.company)]
+                ? { id: companyMap[String(period.company)].id, name: companyMap[String(period.company)].name }
+                : { id: period.company, name: 'Unknown' },
+            sizePrices: sizePrices
+                .filter(sp => sp.size && sp.size.type)
+                .map(sp => ({
+                    type: sp.size.type,
+                    size: { 
+                        id: sp.size.id, 
+                        name: sp.size.name, 
+                        size: sp.size.size // add the size string property
+                    },
+                    price: sp.price
+                }))
+        };
+    }));
+
+    // Group by type
+    const typeMap = {};
+    allCompanySizePrices.forEach(companyEntry => {
+        companyEntry.sizePrices.forEach(sp => {
+            if (!typeMap[sp.type]) {
+                typeMap[sp.type] = [];
+            }
+            // Find or create company entry for this type
+            let companyGroup = typeMap[sp.type].find(c => c.company.id === companyEntry.company.id);
+            if (!companyGroup) {
+                companyGroup = { company: companyEntry.company, sizePrices: [] };
+                typeMap[sp.type].push(companyGroup);
+            }
+            companyGroup.sizePrices.push({ size: sp.size, price: sp.price });
+        });
+    });
+
+    // For each type group, for each size, find the highest price and mark it
+    Object.values(typeMap).forEach(companies => {
+        // Collect all sizes for this type
+        const sizeMap = {};
+        companies.forEach(companyGroup => {
+            companyGroup.sizePrices.forEach(sp => {
+                const sizeKey = sp.size.id;
+                if (!sizeMap[sizeKey]) sizeMap[sizeKey] = [];
+                sizeMap[sizeKey].push({ companyGroup, sp });
+            });
+        });
+        // For each size, find the max price and set a flag
+        Object.values(sizeMap).forEach(entries => {
+            const maxPrice = Math.max(...entries.map(e => e.sp.price));
+            entries.forEach(e => {
+                if (e.sp.price === maxPrice) {
+                    e.sp.highest = true;
+                } else {
+                    e.sp.highest = false;
+                }
+            });
+        });
+    });
+
+    // Convert to array format
+    const result = Object.entries(typeMap).map(([type, companies]) => ({
+        type,
+        companies
+    }));
+
+    return result;
+};
+
 module.exports = {
     getById,
     getAllByCompany,
     create,
     update,
-    remove
+    remove,
+    getAllDistinctPeriodNamesSorted,
+    getPricesByCompanyForPeriodName
 };

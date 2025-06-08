@@ -7,11 +7,23 @@ const {
     getAllPeriodsByCompany,
     createPeriod,
     updatePeriod,
-    removePeriod
+    removePeriod,
+    getAllDistinctPeriodNames,
+    getAllPricesByCompanyForPeriodName
 } = require('../controllers/period-size-price.controller');
 const TimeOfDayEnum = require('../enums/time-of-day.enum');
 
 const router = express.Router();
+
+// 🔹 Get all distinct period names sorted
+router.get(
+    '/distinct-names',
+    [
+        validateJWT,
+        validateFields
+    ],
+    getAllDistinctPeriodNames
+);
 
 // 🔹 Get period by id, including sizePrices
 router.get(
@@ -101,7 +113,16 @@ router.put(
     updatePeriod
 );
 
-
+// 🔹 Get prices by company for a given period name
+router.get(
+    '/prices/by-period-name',
+    [
+        validateJWT,
+        query('periodName').notEmpty().withMessage('periodName is required'),
+        validateFields
+    ],
+    getAllPricesByCompanyForPeriodName
+);
 
 // 🔹 Soft delete a period
 router.delete(
@@ -113,5 +134,7 @@ router.delete(
     ],
     removePeriod
 );
+
+
 
 module.exports = router;
