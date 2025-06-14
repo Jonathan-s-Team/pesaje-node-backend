@@ -49,8 +49,6 @@ app.use('/api/company-sale-payment-method', require('./routes/company-sale-payme
 app.use('/api/local-sale', require('./routes/local-sale.routes'));
 app.use('/api/report', require('./routes/report.routes'));
 
-app.use('/uploads', require('./routes/uploads.routes'));
-
 
 // Escuchar peticiones
 app.listen(process.env.PORT, () => {

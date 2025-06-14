@@ -1,5 +1,3 @@
-
-
 const { Router } = require('express');
 const { check, query, param } = require('express-validator');
 const router = Router();
@@ -7,7 +5,7 @@ const router = Router();
 const { createUser, getUsers, getUserById, updateUser, deleteUser, updateUserPassword, uploadUserPhoto } = require('../controllers/user.controller');
 const { validateFields } = require('../middlewares/validate-fields');
 const { validateJWT } = require('../middlewares/validate-jwt');
-const upload = require('../middlewares/upload');
+const uploadCloudinary = require('../middlewares/upload-cloudinary');
 
 
 router.post(
@@ -140,7 +138,8 @@ router.put(
         validateJWT,
         param('id').isMongoId().withMessage('Invalid user ID'),
         validateFields,
-        upload.single('photo')
+        uploadCloudinary.upload.single('photo'),
+        uploadCloudinary.uploadToCloudinary
     ],
     uploadUserPhoto
 );

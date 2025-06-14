@@ -110,21 +110,11 @@ const deleteUser = async (req, res = response) => {
 
 const uploadUserPhoto = async (req, res = response) => {
     try {
-        const { id } = req.params;
-        const file = req.file;
-
-        const photoPath = await uploadPhoto(id, file);
-
-        res.status(200).json({
-            ok: true,
-            message: 'Photo uploaded successfully',
-            data: { photo: photoPath }
-        });
+        // Use Cloudinary URL if available, otherwise pass file
+        const photoPath = await uploadPhoto(req.params.id, req.cloudinaryUrl || req.file);
+        res.json({ ok: true, photo: photoPath });
     } catch (error) {
-        res.status(400).json({
-            ok: false,
-            message: error.message
-        });
+        res.status(400).json({ ok: false, message: error.message });
     }
 };
 

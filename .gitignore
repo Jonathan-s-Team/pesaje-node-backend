@@ -4,6 +4,3 @@ mongo/
 !models/mongo/
 
 .env
-
-
-uploads/

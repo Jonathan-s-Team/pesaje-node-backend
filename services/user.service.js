@@ -1,5 +1,3 @@
-const fs = require('fs');
-const path = require('path');
 const bcrypt = require('bcryptjs');
 
 const dbAdapter = require('../adapters');
@@ -141,19 +139,26 @@ const remove = async (id) => {
     return await dbAdapter.userAdapter.update(id, { deletedAt: new Date() });
 };
 
-const uploadPhoto = async (userId, file) => {
+const uploadPhoto = async (userId, fileOrUrl) => {
     const user = await dbAdapter.userAdapter.getById(userId);
     if (!user) throw new Error('User not found');
 
     const personId = user.person;
-    if (!file || !file.filename) {
+
+    // Support both local file and cloudinary URL
+    let photoPath;
+    if (typeof fileOrUrl === 'string') {
+        // Cloudinary URL
+        photoPath = fileOrUrl;
+    } else if (fileOrUrl && fileOrUrl.filename) {
+        // Local file (legacy)
+        const path = require('path');
+        const ext = path.extname(fileOrUrl.originalname);
+        const filename = `${userId}${ext}`;
+        photoPath = `/people/${filename}`;
+    } else {
         throw new Error('Photo file is required');
     }
-
-    // Generate photo path using userId and preserve extension
-    const ext = path.extname(file.originalname);
-    const filename = `${userId}${ext}`;
-    const photoPath = `/people/${filename}`;
 
     // Update the person document with photo path
     await dbAdapter.personAdapter.update(personId, { photo: photoPath });
