@@ -1,7 +1,6 @@
 const { Schema, model } = require('mongoose');
 
 const CompanySchema = Schema({
-
   name: {
     type: String,
     required: true
@@ -161,7 +160,7 @@ const CompanySchema = Schema({
 
   classificationQuality: {
     type: String, // e.g., "BAD", "GOOD", "EXCELLENT"
-    enum: ['BAD', 'GOOD', 'EXCELLENT'], // optional constraint
+    enum: ['BAD', 'GOOD', 'EXCELLENT'],
   },
   arePaymentsOnTime: {
     type: Boolean, // true = yes, false = no
@@ -177,6 +176,18 @@ const CompanySchema = Schema({
   },
   observation4: {
     type: String,
+  },
+  isLogisticsSent: {
+    type: Boolean,
+  },
+  isLogisticsPayed: {
+    type: Boolean,
+  },
+  wholeAmountToPay: {
+    type: Number,
+  },
+  tailAmountToPay: {
+    type: Number,
   },
 
   deletedAt: {
