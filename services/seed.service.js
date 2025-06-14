@@ -503,6 +503,8 @@ const seedSizes = async () => {
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b15"), size: "70/80", type: SizeTypeEnum.WHOLE },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b16"), size: "80/100", type: SizeTypeEnum.WHOLE },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b17"), size: "100/120", type: SizeTypeEnum.WHOLE },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b18"), size: "Corriente", type: SizeTypeEnum.WHOLE },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b19"), size: "XSBKN", type: SizeTypeEnum.WHOLE },
 
             // TAIL-A
             { _id: new mongoose.Types.ObjectId("60f9a7b2c8b3f10ffc2e4b01"), size: "16/20", type: SizeTypeEnum['TAIL-A'] },
@@ -516,6 +518,8 @@ const seedSizes = async () => {
             { _id: new mongoose.Types.ObjectId("60f9a7b2c8b3f10ffc2e4b09"), size: "71/90", type: SizeTypeEnum['TAIL-A'] },
             { _id: new mongoose.Types.ObjectId("60f9a7b2c8b3f10ffc2e4b10"), size: "91/110", type: SizeTypeEnum['TAIL-A'] },
             { _id: new mongoose.Types.ObjectId("60f9a7b2c8b3f10ffc2e4b11"), size: "110/130", type: SizeTypeEnum['TAIL-A'] },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b20"), size: "Corriente", type: SizeTypeEnum['TAIL-A'] },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b21"), size: "XSBKN", type: SizeTypeEnum['TAIL-A'] },
 
             // TAIL-A-
             { _id: new mongoose.Types.ObjectId("60f9a7b2c8b3f10ffc2e4b12"), size: "16/20", type: SizeTypeEnum['TAIL-A-'] },
@@ -529,6 +533,8 @@ const seedSizes = async () => {
             { _id: new mongoose.Types.ObjectId("60f9a7b2c8b3f10ffc2e4b20"), size: "71/90", type: SizeTypeEnum['TAIL-A-'] },
             { _id: new mongoose.Types.ObjectId("60f9a7b2c8b3f10ffc2e4b21"), size: "91/110", type: SizeTypeEnum['TAIL-A-'] },
             { _id: new mongoose.Types.ObjectId("60f9a7b2c8b3f10ffc2e4b22"), size: "110/130", type: SizeTypeEnum['TAIL-A-'] },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b22"), size: "Corriente", type: SizeTypeEnum['TAIL-A-'] },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b23"), size: "XSBKN", type: SizeTypeEnum['TAIL-A-'] },
 
             // TAIL-B
             { _id: new mongoose.Types.ObjectId("60f9a7b2c8b3f10ffc2e4b23"), size: "16/20", type: SizeTypeEnum['TAIL-B'] },
@@ -542,6 +548,8 @@ const seedSizes = async () => {
             { _id: new mongoose.Types.ObjectId("60f9a7b2c8b3f10ffc2e4b31"), size: "71/90", type: SizeTypeEnum['TAIL-B'] },
             { _id: new mongoose.Types.ObjectId("60f9a7b2c8b3f10ffc2e4b32"), size: "91/110", type: SizeTypeEnum['TAIL-B'] },
             { _id: new mongoose.Types.ObjectId("60f9a7b2c8b3f10ffc2e4b33"), size: "110/130", type: SizeTypeEnum['TAIL-B'] },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b24"), size: "Corriente", type: SizeTypeEnum['TAIL-B'] },
+            { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b25"), size: "XSBKN", type: SizeTypeEnum['TAIL-B'] },
 
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b34"), size: "BR Large", type: SizeTypeEnum.RESIDUAL },
             { _id: new mongoose.Types.ObjectId("60f8a7b2c8b3f10ffc2e4b35"), size: "BR Medium", type: SizeTypeEnum.RESIDUAL },

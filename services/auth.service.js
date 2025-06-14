@@ -158,6 +158,12 @@ const getUserById = async (id) => {
                 fullname: `${user.person.names} ${user.person.lastNames}`,
                 email: user.person.email,
                 roles: user.roles,
+                person: {
+                    names: user.person.names,
+                    lastNames: user.person.lastNames,
+                    photo: user.person.photo,
+                }
+                // person: user.person
             },
             permissions: nestedOptions,
         };
