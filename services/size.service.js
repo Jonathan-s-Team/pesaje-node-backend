@@ -10,12 +10,20 @@ const getAll = async (type = null) => {
         sizes = sizes.filter(size => typesArray.includes(size.type));
     }
 
-    // Ensure correct sorting (numeric sorting for sizes)
+    // Improved sorting: numeric sizes first, non-numeric at the end
     sizes.sort((a, b) => {
-        const sizeA = a.size.split('/').map(Number); // Convert "20/30" → [20, 30]
+        const sizeA = a.size.split('/').map(Number);
         const sizeB = b.size.split('/').map(Number);
+        const isNumA = sizeA.every(n => !isNaN(n));
+        const isNumB = sizeB.every(n => !isNaN(n));
 
-        return sizeA[0] - sizeB[0] || sizeA[1] - sizeB[1]; // Sort first by primary size, then secondary
+        if (isNumA && isNumB) {
+            return sizeA[0] - sizeB[0] || sizeA[1] - sizeB[1];
+        }
+        if (isNumA) return -1;
+        if (isNumB) return 1;
+        // Both are not numbers, keep original order or sort alphabetically if you want
+        return 0;
     });
 
     return sizes;

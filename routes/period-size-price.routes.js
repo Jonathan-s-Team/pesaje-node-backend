@@ -9,7 +9,7 @@ const {
     updatePeriod,
     removePeriod,
     getAllDistinctPeriodNames,
-    getAllPricesByCompanyForPeriodName
+    getAllPricesForCompanyByPeriodName
 } = require('../controllers/period-size-price.controller');
 const TimeOfDayEnum = require('../enums/time-of-day.enum');
 
@@ -121,7 +121,7 @@ router.get(
         query('periodName').notEmpty().withMessage('periodName is required'),
         validateFields
     ],
-    getAllPricesByCompanyForPeriodName
+    getAllPricesForCompanyByPeriodName
 );
 
 // 🔹 Soft delete a period

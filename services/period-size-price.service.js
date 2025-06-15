@@ -212,7 +212,7 @@ const remove = async (id) => {
  * Returns prices grouped by Size type, then for each type a list of companies with their sizes and prices for that type.
  * Output: [{ type, companies: [{ company: {id, name}, sizePrices: [{ size: {id, name}, price }] }] }]
  */
-const getPricesByCompanyForPeriodName = async (periodName) => {
+const getPricesForCompanyByPeriodName = async (periodName) => {
     // Get all periods with the given name
     const periods = await dbAdapter.periodAdapter.getAll({ name: periodName });
     if (!periods.length) return [];
@@ -229,6 +229,20 @@ const getPricesByCompanyForPeriodName = async (periodName) => {
             { period: period.id },
             ['size']
         );
+        // Sort sizePrices by size string as requested
+        sizePrices.sort((a, b) => {
+            const sizeA = a.size.size.split('/').map(Number);
+            const sizeB = b.size.size.split('/').map(Number);
+            const isNumA = sizeA.every(n => !isNaN(n));
+            const isNumB = sizeB.every(n => !isNaN(n));
+
+            if (isNumA && isNumB) {
+                return sizeA[0] - sizeB[0] || sizeA[1] - sizeB[1];
+            }
+            if (isNumA) return -1;
+            if (isNumB) return 1;
+            return 0;
+        });
         return {
             company: companyMap[String(period.company)]
                 ? { id: companyMap[String(period.company)].id, name: companyMap[String(period.company)].name }
@@ -237,9 +251,9 @@ const getPricesByCompanyForPeriodName = async (periodName) => {
                 .filter(sp => sp.size && sp.size.type)
                 .map(sp => ({
                     type: sp.size.type,
-                    size: { 
-                        id: sp.size.id, 
-                        name: sp.size.name, 
+                    size: {
+                        id: sp.size.id,
+                        name: sp.size.name,
                         size: sp.size.size // add the size string property
                     },
                     price: sp.price
@@ -304,5 +318,5 @@ module.exports = {
     update,
     remove,
     getAllDistinctPeriodNamesSorted,
-    getPricesByCompanyForPeriodName
+    getPricesForCompanyByPeriodName
 };
