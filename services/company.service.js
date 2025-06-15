@@ -1,7 +1,23 @@
 const dbAdapter = require('../adapters');
 
 const getAll = async () => {
-    return await dbAdapter.companyAdapter.getAll();
+    const companies = await dbAdapter.companyAdapter.getAll({});
+    // Sort: numeric codes first, then non-numeric/missing codes at the end
+    companies.sort((a, b) => {
+        const codeA = parseInt(a.code, 10);
+        const codeB = parseInt(b.code, 10);
+        const isNumA = !isNaN(codeA);
+        const isNumB = !isNaN(codeB);
+
+        if (isNumA && isNumB) {
+            return codeA - codeB;
+        }
+        if (isNumA) return -1;
+        if (isNumB) return 1;
+        // Both are not numbers, keep original order or sort alphabetically if you want
+        return 0;
+    });
+    return companies;
 };
 
 const getById = async (id) => {
