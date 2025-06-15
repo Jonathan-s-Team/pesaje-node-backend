@@ -11,7 +11,6 @@ const CompanySchema = Schema({
   },
   address: {
     type: String,
-    required: true
   },
   city: {
     type: String,
@@ -130,14 +129,8 @@ const CompanySchema = Schema({
     type: Number, // e.g., 90 for 90% reliable
   },
 
-  logisticsShippingAvailable: {
-    type: Boolean, // true = yes, false = no
-  },
-  logisticsCompensationWhole: {
-    type: Number, // amount in $
-  },
-  logisticsCompensationTails: {
-    type: Number, // amount in $
+  isLogisticsSent: {
+    type: Boolean,
   },
   minimumQuantityReceivedLb: {
     type: Number, // in pounds (LB)
@@ -156,6 +149,15 @@ const CompanySchema = Schema({
   },
   extraInformation: {
     type: String,
+  },
+  isLogisticsPayed: {
+    type: Boolean,
+  },
+  wholeAmountToPay: {
+    type: Number,
+  },
+  tailAmountToPay: {
+    type: Number,
   },
 
   classificationQuality: {
@@ -177,18 +179,6 @@ const CompanySchema = Schema({
   observation4: {
     type: String,
   },
-  isLogisticsSent: {
-    type: Boolean,
-  },
-  isLogisticsPayed: {
-    type: Boolean,
-  },
-  wholeAmountToPay: {
-    type: Number,
-  },
-  tailAmountToPay: {
-    type: Number,
-  },
 
   deletedAt: {
     type: Date,
@@ -198,30 +188,28 @@ const CompanySchema = Schema({
   { timestamps: true },
 );
 
-// 🔹 Auto-increment `code`
+// 🔹 Auto-increment `code` based on highest code in Company collection
 CompanySchema.pre('save', async function (next) {
   if (!this.code) {
     try {
-      const Counter = require('../control/counter'); // Lazy import
-      const counterKey = 'Company-Code';
+      const Company = this.constructor;
+      // Find the highest code (as a number) in the collection
+      const highest = await Company.findOne({ code: { $exists: true } })
+        .sort({ code: -1 })
+        .collation({ locale: 'en_US', numericOrdering: true }); // Ensure numeric sort
 
-      const counter = await Counter.findOneAndUpdate(
-        { model: counterKey },
-        { $inc: { seq: 100 } },
-        { new: true, upsert: true, setDefaultsOnInsert: true }
-      );
-
-      // If this is the first time, set seq to 101 instead of 100
-      if (counter.seq === 100) {
-        counter.seq = 101;
-        await counter.save();
+      let nextCode = 101;
+      if (highest && highest.code) {
+        // Parse code as integer, fallback to 0 if not a number
+        let highestCode = parseInt(highest.code, 10) || 0;
+        // Round down to nearest hundred, then add 100
+        nextCode = Math.floor(highestCode / 100) * 100 + 100 + 1;
+        // If nextCode ends with something other than 01, set to nearest hundred + 1
+        if (nextCode % 100 !== 1) {
+          nextCode = Math.floor(nextCode / 100) * 100 + 1;
+        }
       }
-
-      if (!counter) {
-        return next(new Error('Failed to generate company code.'));
-      }
-
-      this.code = `${counter.seq}`;
+      this.code = `${nextCode}`;
     } catch (error) {
       return next(error);
     }
