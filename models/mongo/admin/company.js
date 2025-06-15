@@ -11,7 +11,6 @@ const CompanySchema = Schema({
   },
   address: {
     type: String,
-    required: true
   },
   city: {
     type: String,
@@ -130,14 +129,8 @@ const CompanySchema = Schema({
     type: Number, // e.g., 90 for 90% reliable
   },
 
-  logisticsShippingAvailable: {
-    type: Boolean, // true = yes, false = no
-  },
-  logisticsCompensationWhole: {
-    type: Number, // amount in $
-  },
-  logisticsCompensationTails: {
-    type: Number, // amount in $
+  isLogisticsSent: {
+    type: Boolean,
   },
   minimumQuantityReceivedLb: {
     type: Number, // in pounds (LB)
@@ -156,6 +149,15 @@ const CompanySchema = Schema({
   },
   extraInformation: {
     type: String,
+  },
+  isLogisticsPayed: {
+    type: Boolean,
+  },
+  wholeAmountToPay: {
+    type: Number,
+  },
+  tailAmountToPay: {
+    type: Number,
   },
 
   classificationQuality: {
@@ -176,18 +178,6 @@ const CompanySchema = Schema({
   },
   observation4: {
     type: String,
-  },
-  isLogisticsSent: {
-    type: Boolean,
-  },
-  isLogisticsPayed: {
-    type: Boolean,
-  },
-  wholeAmountToPay: {
-    type: Number,
-  },
-  tailAmountToPay: {
-    type: Number,
   },
 
   deletedAt: {
