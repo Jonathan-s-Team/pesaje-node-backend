@@ -1,7 +1,9 @@
 const dbAdapter = require('../adapters');
 
-const getAll = async () => {
-    const companies = await dbAdapter.companyAdapter.getAll({});
+const getAll = async (includeDeleted = false) => {
+    // Use includeDeleted to filter out soft-deleted companies
+    const query = includeDeleted ? {} : { deletedAt: null };
+    const companies = await dbAdapter.companyAdapter.getAll(query);
     // Sort: numeric codes first, then non-numeric/missing codes at the end
     companies.sort((a, b) => {
         const codeA = parseInt(a.code, 10);
@@ -51,8 +53,8 @@ const remove = async (id) => {
     if (!company) {
         throw new Error('Company not found');
     }
-    // Soft delete: set deletedAt timestamp
-    return await dbAdapter.companyAdapter.update(id, { deletedAt: new Date() });
+    // Soft delete: set deletedAt timestamp and remove code
+    return await dbAdapter.companyAdapter.update(id, { deletedAt: new Date(), code: null });
 };
 
 

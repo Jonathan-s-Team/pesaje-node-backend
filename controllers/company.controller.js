@@ -3,7 +3,8 @@ const { getAll, getById, create, update, remove } = require('../services/company
 
 const getCompanies = async (req, res = response) => {
     try {
-        const data = await getAll();
+        const includeDeleted = req.query.includeDeleted === 'true';
+        const data = await getAll(includeDeleted);
         res.status(200).json({
             ok: true,
             data,
