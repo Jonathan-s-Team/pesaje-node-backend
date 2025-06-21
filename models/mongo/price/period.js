@@ -12,6 +12,10 @@ const PeriodSchema = Schema({
     type: Date,
     required: true,
   },
+  toDate: {
+    type: Date,
+    required: true,
+  },
   timeOfDay: {
     type: String,
     enum: TimeOfDayEnum,

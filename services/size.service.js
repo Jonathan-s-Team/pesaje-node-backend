@@ -10,23 +10,36 @@ const getAll = async (type = null) => {
         sizes = sizes.filter(size => typesArray.includes(size.type));
     }
 
-    // Improved sorting: numeric sizes first, non-numeric at the end
-    sizes.sort((a, b) => {
-        const sizeA = a.size.split('/').map(Number);
-        const sizeB = b.size.split('/').map(Number);
-        const isNumA = sizeA.every(n => !isNaN(n));
-        const isNumB = sizeB.every(n => !isNaN(n));
-
-        if (isNumA && isNumB) {
-            return sizeA[0] - sizeB[0] || sizeA[1] - sizeB[1];
-        }
-        if (isNumA) return -1;
-        if (isNumB) return 1;
-        // Both are not numbers, keep original order or sort alphabetically if you want
-        return 0;
+    // Group by type
+    const typeGroups = {};
+    sizes.forEach(size => {
+        const type = size.type || '';
+        if (!typeGroups[type]) typeGroups[type] = [];
+        typeGroups[type].push(size);
     });
 
-    return sizes;
+    // Sort each group by size string
+    Object.values(typeGroups).forEach(group => {
+        group.sort((a, b) => {
+            const sizeA = a.size.split('/').map(Number);
+            const sizeB = b.size.split('/').map(Number);
+            const isNumA = sizeA.every(n => !isNaN(n));
+            const isNumB = sizeB.every(n => !isNaN(n));
+
+            if (isNumA && isNumB) {
+                return sizeA[0] - sizeB[0] || sizeA[1] - sizeB[1];
+            }
+            if (isNumA) return -1;
+            if (isNumB) return 1;
+            // Both are not numbers, sort alphabetically
+            return a.size.localeCompare(b.size);
+        });
+    });
+
+    // Flatten back to a single array, preserving type group order
+    const sortedSizes = Object.values(typeGroups).flat();
+
+    return sortedSizes;
 };
 
 module.exports = {
