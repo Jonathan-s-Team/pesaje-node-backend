@@ -10,7 +10,36 @@ const getById = async (id) => {
         ['size']
     );
 
-    return { ...period, sizePrices };
+    // Group by size.type
+    const typeGroups = {};
+    sizePrices.forEach(sp => {
+        const type = sp.size.type || '';
+        if (!typeGroups[type]) typeGroups[type] = [];
+        typeGroups[type].push(sp);
+    });
+
+    // Sort each group by size string
+    Object.values(typeGroups).forEach(group => {
+        group.sort((a, b) => {
+            const sizeA = a.size.size.split('/').map(Number);
+            const sizeB = b.size.size.split('/').map(Number);
+            const isNumA = sizeA.every(n => !isNaN(n));
+            const isNumB = sizeB.every(n => !isNaN(n));
+
+            if (isNumA && isNumB) {
+                return sizeA[0] - sizeB[0] || sizeA[1] - sizeB[1];
+            }
+            if (isNumA) return -1;
+            if (isNumB) return 1;
+            // Both are not numbers, sort alphabetically
+            return a.size.size.localeCompare(b.size.size);
+        });
+    });
+
+    // Flatten back to a single array, preserving type group order
+    const sortedSizePrices = Object.values(typeGroups).flat();
+
+    return { ...period, sizePrices: sortedSizePrices };
 };
 
 const getAllByCompany = async (companyId) => {
@@ -96,7 +125,7 @@ const create = async (data) => {
 
         // ✅ Create the Period only after validation
         const period = await dbAdapter.periodAdapter.create(
-            { name: data.name, receivedDateTime: data.receivedDateTime, company: data.company, fromDate: data.fromDate, timeOfDay: data.timeOfDay },
+            { name: data.name, receivedDateTime: data.receivedDateTime, company: data.company, fromDate: data.fromDate, toDate: data.toDate, timeOfDay: data.timeOfDay },
             { session }
         );
 
@@ -126,7 +155,7 @@ const create = async (data) => {
 };
 
 const update = async (periodId, data) => {
-    const { receivedDateTime, sizePrices, fromDate, timeOfDay } = data;
+    const { receivedDateTime, sizePrices, fromDate, toDate, timeOfDay } = data;
 
     // Find the period
     const period = await dbAdapter.periodAdapter.getById(periodId);
@@ -162,7 +191,7 @@ const update = async (periodId, data) => {
 
     try {
         if (receivedDateTime) {
-            await dbAdapter.periodAdapter.update(periodId, { receivedDateTime, fromDate, timeOfDay }, { session: transaction.session });
+            await dbAdapter.periodAdapter.update(periodId, { receivedDateTime, fromDate, toDate, timeOfDay }, { session: transaction.session });
         }
 
         for (let sp of sizePrices) {
@@ -229,25 +258,41 @@ const getPricesForCompanyByPeriodName = async (periodName) => {
             { period: period.id },
             ['size']
         );
-        // Sort sizePrices by size string as requested
-        sizePrices.sort((a, b) => {
-            const sizeA = a.size.size.split('/').map(Number);
-            const sizeB = b.size.size.split('/').map(Number);
-            const isNumA = sizeA.every(n => !isNaN(n));
-            const isNumB = sizeB.every(n => !isNaN(n));
 
-            if (isNumA && isNumB) {
-                return sizeA[0] - sizeB[0] || sizeA[1] - sizeB[1];
-            }
-            if (isNumA) return -1;
-            if (isNumB) return 1;
-            return 0;
+        // Group by size.type
+        const typeGroups = {};
+        sizePrices.forEach(sp => {
+            const type = sp.size.type || '';
+            if (!typeGroups[type]) typeGroups[type] = [];
+            typeGroups[type].push(sp);
         });
+
+        // Sort each group by size string
+        Object.values(typeGroups).forEach(group => {
+            group.sort((a, b) => {
+                const sizeA = a.size.size.split('/').map(Number);
+                const sizeB = b.size.size.split('/').map(Number);
+                const isNumA = sizeA.every(n => !isNaN(n));
+                const isNumB = sizeB.every(n => !isNaN(n));
+
+                if (isNumA && isNumB) {
+                    return sizeA[0] - sizeB[0] || sizeA[1] - sizeB[1];
+                }
+                if (isNumA) return -1;
+                if (isNumB) return 1;
+                // Both are not numbers, sort alphabetically
+                return a.size.size.localeCompare(b.size.size);
+            });
+        });
+
+        // Flatten back to a single array, preserving type group order
+        const sortedSizePrices = Object.values(typeGroups).flat();
+
         return {
             company: companyMap[String(period.company)]
                 ? { id: companyMap[String(period.company)].id, name: companyMap[String(period.company)].name }
                 : { id: period.company, name: 'Unknown' },
-            sizePrices: sizePrices
+            sizePrices: sortedSizePrices
                 .filter(sp => sp.size && sp.size.type)
                 .map(sp => ({
                     type: sp.size.type,
